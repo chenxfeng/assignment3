@@ -140,16 +140,17 @@ void bottom_up_step(
     int* distances)
 {
     // for (int i = 0; i < g->num_nodes; ++i) {
-    //     if (frontier.count(i) <= 0) {
+    //     if (frontier.count(i) == 0) {
     //         int node = i;
-    //         int start_edge = *incoming_begin(g, node);
-    //         int end_edge = *incoming_end(g, node);
+    //         const Vertex* start_edge = incoming_begin(g, node);
+    //         const Vertex* end_edge = incoming_end(g, node);
     //         // attempt to check all the ancestor
-    //         for (int neighbor = start_edge; neighbor != end_edge; ++neighbor) {
-    //             int incoming = g->incoming_edges[neighbor];
-    //             if (frontier.count(incoming) > 0) {
+    //         for (const Vertex* neighbor = start_edge; neighbor != end_edge; ++neighbor) {
+    //             int incoming = g->incoming_edges[*neighbor];
+    //             if (frontier.count(incoming) != 0 && distances[node] == NOT_VISITED_MARKER) {//may contain loop(self)
     //                 distances[node] = distances[incoming] + 1;
     //                 new_frontier.insert(node);
+    //                 break;
     //             }
     //         }
     //     }
@@ -159,16 +160,17 @@ void bottom_up_step(
     for (int i = 0; i < g->num_nodes; ++i) {
         if (frontier.count(i) <= 0) {
             int node = i;
-            int start_edge = *incoming_begin(g, node);
-            int end_edge = *incoming_end(g, node);
+            const Vertex* start_edge = incoming_begin(g, node);
+            const Vertex* end_edge = incoming_end(g, node);
             // attempt to check all the ancestor
-            for (int neighbor = start_edge; neighbor != end_edge; ++neighbor) {
-                int incoming = g->incoming_edges[neighbor];
-                if (frontier.count(incoming) > 0) {
+            for (const Vertex* neighbor = start_edge; neighbor != end_edge; ++neighbor) {
+                int incoming = g->incoming_edges[*neighbor];
+                if (frontier.count(incoming) > 0 && distances[node] == NOT_VISITED_MARKER) {
                     ///not use a loop cause the compare must be true
                     __sync_bool_compare_and_swap(&distances[node], NOT_VISITED_MARKER, distances[incoming] + 1);
 #pragma omp critical
                     new_frontier.insert(node);
+                    break;
                 }
             }
         }
@@ -272,12 +274,12 @@ void hybrid_bottom_up(
     // for (int i = 0; i < g->num_nodes; ++i) {
     //     if (frontier->query.count(i) <= 0) {
     //         int node = i;
-    //         int start_edge = *incoming_begin(g, node);
-    //         int end_edge = *incoming_end(g, node);
+    //         const Vertex* start_edge = incoming_begin(g, node);
+    //         const Vertex* end_edge = incoming_end(g, node);
     //         // attempt to check all the ancestor
-    //         for (int neighbor = start_edge; neighbor != end_edge; ++neighbor) {
-    //             int incoming = g->incoming_edges[neighbor];
-    //             if (frontier->query.count(incoming) > 0) {
+    //         for (const Vertex* neighbor = start_edge; neighbor != end_edge; ++neighbor) {
+    //             int incoming = g->incoming_edges[*neighbor];
+    //             if (frontier->query.count(incoming) > 0 && distances[node] == NOT_VISITED_MARKER) {
     //                 distances[node] = distances[incoming] + 1;
     //                 int index = new_frontier->count++;
     //                 new_frontier->vertices[index] = outgoing;
@@ -291,12 +293,12 @@ void hybrid_bottom_up(
     for (int i = 0; i < g->num_nodes; ++i) {
         if (frontier->query.count(i) <= 0) {
             int node = i;
-            int start_edge = *incoming_begin(g, node);
-            int end_edge = *incoming_end(g, node);
+            const Vertex* start_edge = incoming_begin(g, node);
+            const Vertex* end_edge = incoming_end(g, node);
             // attempt to check all the ancestor
-            for (int neighbor = start_edge; neighbor != end_edge; ++neighbor) {
-                int incoming = g->incoming_edges[neighbor];
-                if (frontier->query.count(incoming) > 0) {
+            for (const Vertex* neighbor = start_edge; neighbor != end_edge; ++neighbor) {
+                int incoming = g->incoming_edges[*neighbor];
+                if (frontier->query.count(incoming) > 0 && distances[node] == NOT_VISITED_MARKER) {
                     ///not use a loop cause the compare must be true
                     __sync_bool_compare_and_swap(&distances[node], NOT_VISITED_MARKER, distances[incoming] + 1);
                     int index;
