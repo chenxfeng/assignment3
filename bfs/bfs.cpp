@@ -343,6 +343,8 @@ void bfs_hybrid(Graph graph, solution* sol)
 
         ///dynamically choose between your "top down" and "bottom up" formulations 
         ///based on the size of the frontier or other properties of the graph
+        ///top-down would be good at the begin
+        ///bottom-up would be suitable for the tail
         if (frontier->count < 100) {//this condition is just for testing
             hybrid_top_down(graph, frontier, new_frontier, sol->distances);
         } else {
