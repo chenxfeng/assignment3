@@ -192,15 +192,15 @@ void bfs_bottom_up(Graph graph, solution* sol)
     std::set<int> frontier;
     std::set<int> new_frontier;
 
-    // setup visited set
-    frontier.insert(ROOT_NODE_ID);
-    sol->distances[ROOT_NODE_ID] = 0;
-
     // initialize all nodes to NOT_VISITED
 #pragma omp parallel for
     for (int i=0; i<graph->num_nodes; i++) {
         sol->distances[i] = NOT_VISITED_MARKER;
     }
+
+    // setup visited set
+    frontier.insert(ROOT_NODE_ID);
+    sol->distances[ROOT_NODE_ID] = 0;
 
     while (frontier.size() != 0) {
         new_frontier.clear();
@@ -212,10 +212,146 @@ void bfs_bottom_up(Graph graph, solution* sol)
     }
 }
 
+void hybrid_top_down(
+    Graph g,
+    vertex_set* frontier,
+    vertex_set* new_frontier,
+    int* distances)
+{
+    // ///adjust for different data structure
+    // for (int i = 0; i < frontier->count; i++) {
+    //     int node = frontier->vertices[i];
+    //     int start_edge = g->outgoing_starts[node];
+    //     int end_edge = (node == g->num_nodes - 1)
+    //                        ? g->num_edges
+    //                        : g->outgoing_starts[node + 1];
+    //     // attempt to add all neighbors to the new frontier
+    //     for (int neighbor = start_edge; neighbor < end_edge; neighbor++) {
+    //         int outgoing = g->outgoing_edges[neighbor];
+    //         if (distances[outgoing] == NOT_VISITED_MARKER) {
+    //             distances[outgoing] = distances[node] + 1;
+    //             int index = new_frontier->count++;
+    //             new_frontier->vertices[index] = outgoing;
+    //             new_frontier.insert(outgoing);
+    //         }
+    //     }
+    // }
+#pragma omp parallel for
+// #pragma omp parallel for num_threads(thread_count) schedule(static, 1)
+    for (int i = 0; i < frontier->count; i++) {
+        int node = frontier->vertices[i];
+        int start_edge = g->outgoing_starts[node];
+        int end_edge = (node == g->num_nodes - 1)
+                           ? g->num_edges
+                           : g->outgoing_starts[node + 1];
+        // attempt to add all neighbors to the new frontier
+        for (int neighbor = start_edge; neighbor < end_edge; neighbor++) {
+            int outgoing = g->outgoing_edges[neighbor];
+            if (distances[outgoing] == NOT_VISITED_MARKER) {
+                ///not use a loop cause the compare must be true
+                __sync_bool_compare_and_swap(&distances[outgoing], NOT_VISITED_MARKER, distances[node] + 1);
+                int index;
+#pragma omp critical
+                {
+                    index = new_frontier->count++;
+                    new_frontier->query.insert(outgoing);
+                }
+                new_frontier->vertices[index] = outgoing;
+            }
+        }
+    }
+}
+
+void hybrid_bottom_up(
+    Graph g,
+    vertex_set* frontier,
+    vertex_set* new_frontier,
+    int* distances)
+{
+    // ///adjust for different data structure
+    // for (int i = 0; i < g->num_nodes; ++i) {
+    //     if (frontier->query.count(i) <= 0) {
+    //         int node = i;
+    //         int start_edge = *incoming_begin(g, node);
+    //         int end_edge = *incoming_end(g, node);
+    //         // attempt to check all the ancestor
+    //         for (int neighbor = start_edge; neighbor != end_edge; ++neighbor) {
+    //             int incoming = g->incoming_edges[neighbor];
+    //             if (frontier->query.count(incoming) > 0) {
+    //                 distances[node] = distances[incoming] + 1;
+    //                 int index = new_frontier->count++;
+    //                 new_frontier->vertices[index] = outgoing;
+    //                 new_frontier->query.insert(node);
+    //             }
+    //         }
+    //     }
+    // }
+#pragma omp parallel for schedule(dynamic,1)
+// #pragma omp parallel for num_threads(thread_count) schedule(static, 1)
+    for (int i = 0; i < g->num_nodes; ++i) {
+        if (frontier->query.count(i) <= 0) {
+            int node = i;
+            int start_edge = *incoming_begin(g, node);
+            int end_edge = *incoming_end(g, node);
+            // attempt to check all the ancestor
+            for (int neighbor = start_edge; neighbor != end_edge; ++neighbor) {
+                int incoming = g->incoming_edges[neighbor];
+                if (frontier->query.count(incoming) > 0) {
+                    ///not use a loop cause the compare must be true
+                    __sync_bool_compare_and_swap(&distances[node], NOT_VISITED_MARKER, distances[incoming] + 1);
+                    int index;
+#pragma omp critical
+                    {
+                        index = new_frontier->count++;
+                        new_frontier->query.insert(node);
+                    }
+                    new_frontier->vertices[index] = node;
+                }
+            }
+        }
+    }
+}
+
 void bfs_hybrid(Graph graph, solution* sol)
 {
     // 15-418/618 students:
     //
     // You will need to implement the "hybrid" BFS here as
     // described in the handout.
+    vertex_set list1;
+    vertex_set list2;
+    vertex_set_init(&list1, graph->num_nodes);
+    vertex_set_init(&list2, graph->num_nodes);
+
+    vertex_set* frontier = &list1;
+    vertex_set* new_frontier = &list2;
+
+    // setup frontier with the root node
+    frontier->vertices[frontier->count++] = ROOT_NODE_ID;
+    frontier->query.insert(ROOT_NODE_ID);
+    sol->distances[ROOT_NODE_ID] = 0;
+
+    // initialize all nodes to NOT_VISITED
+#pragma omp parallel for
+    for (int i=0; i<graph->num_nodes; i++) {
+        sol->distances[i] = NOT_VISITED_MARKER;
+    }
+
+    while (frontier->count != 0) {
+        vertex_set_clear(new_frontier);
+        new_frontier->query.clear();
+
+        ///dynamically choose between your "top down" and "bottom up" formulations 
+        ///based on the size of the frontier or other properties of the graph
+        if (frontier->count < 100) {//this condition is just for testing
+            hybrid_top_down(graph, frontier, new_frontier, sol->distances);
+        } else {
+            hybrid_bottom_up(graph, frontier, new_frontier, sol->distances);
+        }
+
+        // swap pointers
+        vertex_set* tmp = frontier;
+        frontier = new_frontier;
+        new_frontier = tmp;
+    }
 }
