@@ -31,7 +31,24 @@ void top_down_step(
     vertex_set* new_frontier,
     int* distances)
 {
-
+    // for (int i=0; i<frontier->count; i++) {
+    //     int node = frontier->vertices[i];
+    //     int start_edge = g->outgoing_starts[node];
+    //     int end_edge = (node == g->num_nodes - 1)
+    //                        ? g->num_edges
+    //                        : g->outgoing_starts[node + 1];
+    //     // attempt to add all neighbors to the new frontier
+    //     for (int neighbor=start_edge; neighbor<end_edge; neighbor++) {
+    //         int outgoing = g->outgoing_edges[neighbor];
+    //         if (distances[outgoing] == NOT_VISITED_MARKER) {
+    //             distances[outgoing] = distances[node] + 1;
+    //             int index = new_frontier->count++;
+    //             new_frontier->vertices[index] = outgoing;
+    //         }
+    //     }
+    // }
+#pragma omp parallel for
+// #pragma omp parallel for num_threads(thread_count) schedule(static, 1)
     for (int i=0; i<frontier->count; i++) {
 
         int node = frontier->vertices[i];
@@ -42,12 +59,25 @@ void top_down_step(
                            : g->outgoing_starts[node + 1];
 
         // attempt to add all neighbors to the new frontier
-        for (int neighbor=start_edge; neighbor<end_edge; neighbor++) {
+        for (int neighbor = start_edge; neighbor < end_edge; neighbor++) {
             int outgoing = g->outgoing_edges[neighbor];
 
+//             if (distances[outgoing] == NOT_VISITED_MARKER) {
+// #pragma omp critical(crit1)
+//                 distances[outgoing] = distances[node] + 1;
+// #pragma omp critical(crit2)
+//                 {
+//                 int index = new_frontier->count++;
+//                 new_frontier->vertices[index] = outgoing;
+//                 }
+//             }
+            ///replace __sync_bool_compare_and_swap with critical region
             if (distances[outgoing] == NOT_VISITED_MARKER) {
-                distances[outgoing] = distances[node] + 1;
-                int index = new_frontier->count++;
+                ///not use a loop cause the compare must be true
+                __sync_bool_compare_and_swap(&distances[outgoing], NOT_VISITED_MARKER, distances[node] + 1);
+                int index;
+#pragma omp critical
+                index = new_frontier->count++;
                 new_frontier->vertices[index] = outgoing;
             }
         }
@@ -68,7 +98,10 @@ void bfs_top_down(Graph graph, solution* sol) {
     vertex_set* frontier = &list1;
     vertex_set* new_frontier = &list2;
 
-    // initialize all nodes to NOT_VISITED
+    // // initialize all nodes to NOT_VISITED
+    // for (int i=0; i<graph->num_nodes; i++)
+    //     sol->distances[i] = NOT_VISITED_MARKER;
+#pragma omp parallel for
     for (int i=0; i<graph->num_nodes; i++)
         sol->distances[i] = NOT_VISITED_MARKER;
 

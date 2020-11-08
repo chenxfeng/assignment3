@@ -86,7 +86,7 @@ void run_on_graph(int idx, graph* g, int num_threads, int num_runs,
     double ref_top_down_time = std::numeric_limits<int>::max();
     for (int r = 0; r < num_runs; r++) {
         start = CycleTimer::currentSeconds();
-        reference_bfs_top_down(g, &ref);
+        // reference_bfs_top_down(g, &ref);
         time = CycleTimer::currentSeconds() - start;
         ref_top_down_time = std::min(ref_top_down_time, time);
     }
@@ -101,13 +101,13 @@ void run_on_graph(int idx, graph* g, int num_threads, int num_runs,
 
     bool correct = compareArrays(g, ref.distances, stu.distances);
     
-    if (!correct) {
-        std::cout << "Top down bfs incorrect" << std::endl; 
-        std::cout << "ref_time: " <<  ref_top_down_time << "s" << std::endl;
-    } else {
+    // if (!correct) {
+    //     std::cout << "Top down bfs incorrect" << std::endl; 
+    //     std::cout << "ref_time: " <<  ref_top_down_time << "s" << std::endl;
+    // } else {
         std::cout << "ref_time: " <<  ref_top_down_time << "s" << std::endl;
         std::cout << "stu_time: " <<  stu_top_down_time << "s" << std::endl;
-    }
+    // }
 
     scores[idx][top_down] = compute_score(graph_name, correct, ref_top_down_time, stu_top_down_time);
 
@@ -119,7 +119,7 @@ void run_on_graph(int idx, graph* g, int num_threads, int num_runs,
     double ref_bottom_up_time = std::numeric_limits<int>::max();
     for (int r = 0; r < num_runs; r++) {
         start = CycleTimer::currentSeconds();
-        reference_bfs_bottom_up(g, &ref);
+        // reference_bfs_bottom_up(g, &ref);
         time = CycleTimer::currentSeconds() - start;
         ref_bottom_up_time = std::min(ref_bottom_up_time, time);
     }
@@ -135,13 +135,13 @@ void run_on_graph(int idx, graph* g, int num_threads, int num_runs,
 
     correct = compareArrays(g, ref.distances, stu.distances);
 
-    if (!correct) {
-        std::cout << "Bottom up bfs incorrect" << std::endl; 
-        std::cout << "ref_time: " <<  ref_bottom_up_time << "s" << std::endl;
-    } else {
+    // if (!correct) {
+    //     std::cout << "Bottom up bfs incorrect" << std::endl; 
+    //     std::cout << "ref_time: " <<  ref_bottom_up_time << "s" << std::endl;
+    // } else {
         std::cout << "ref_time: " <<  ref_bottom_up_time << "s" << std::endl;
         std::cout << "stu_time: " <<  stu_bottom_up_time << "s" << std::endl;
-    }
+    // }
 
     scores[idx][bott_up] = compute_score(graph_name, correct, ref_bottom_up_time, stu_bottom_up_time);
 
@@ -156,7 +156,7 @@ void run_on_graph(int idx, graph* g, int num_threads, int num_runs,
     double ref_hybrid_time = std::numeric_limits<int>::max();
     for (int r = 0; r < num_runs; r++) {
         start = CycleTimer::currentSeconds();
-        reference_bfs_hybrid(g, &ref);
+        // reference_bfs_hybrid(g, &ref);
         time = CycleTimer::currentSeconds() - start;
         ref_hybrid_time = std::min(ref_hybrid_time, time);
     }
@@ -171,13 +171,13 @@ void run_on_graph(int idx, graph* g, int num_threads, int num_runs,
     
     correct = compareArrays(g, ref.distances, stu.distances);
     
-    if (!correct) {
-        std::cout << "Hybrid bfs incorrect" << std::endl; 
-        std::cout << "ref_time: " <<  ref_hybrid_time << "s" << std::endl;
-    } else {
+    // if (!correct) {
+    //     std::cout << "Hybrid bfs incorrect" << std::endl; 
+    //     std::cout << "ref_time: " <<  ref_hybrid_time << "s" << std::endl;
+    // } else {
         std::cout << "ref_time: " <<  ref_hybrid_time << "s" << std::endl;
         std::cout << "stu_time: " <<  stu_hybrid_time << "s" << std::endl;
-    }
+    // }
 
     scores[idx][hybrid] = compute_score(graph_name, correct, ref_hybrid_time, stu_hybrid_time);
 
