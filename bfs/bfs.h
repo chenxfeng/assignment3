@@ -3,6 +3,8 @@
 
 //#define DEBUG
 
+#include <set>
+
 #include "../common/graph.h"
 
 struct solution
@@ -17,6 +19,9 @@ struct vertex_set {
   int max_vertices;
   // array of vertex ids in set
   int *vertices;
+
+  ///for quickly query
+  std::set<int> query;
 };
 
 
