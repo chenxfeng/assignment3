@@ -67,7 +67,7 @@ double run_on_graph(graph* g, int num_threads, int num_runs, std::string graph_n
     double ref_time = std::numeric_limits<int>::max();
     for (int r = 0; r < num_runs; r++) {
         start = CycleTimer::currentSeconds();
-        reference_pageRank(g, sol_ref, PageRankDampening, PageRankConvergence);
+        // reference_pageRank(g, sol_ref, PageRankDampening, PageRankConvergence);
         time = CycleTimer::currentSeconds() - start;
         ref_time = std::min(ref_time, time);
     }
@@ -77,12 +77,12 @@ double run_on_graph(graph* g, int num_threads, int num_runs, std::string graph_n
     delete(sol_stu);
     delete(sol_ref);
 
-    if (!correct) {
-        std::cout << "Page rank incorrect" << std::endl; 
-    } else {
+    // if (!correct) {
+    //     std::cout << "Page rank incorrect" << std::endl; 
+    // } else {
         std::cout << "ref_time: " <<  ref_time << "s" << std::endl;
         std::cout << "stu_time: " <<  stu_time << "s" << std::endl;
-    }
+    // }
 
     bool small = false;
     if ((graph_name == "grid1000x1000.graph") || (graph_name == "soc-livejournal1_68m.graph")) small = true;

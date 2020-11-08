@@ -8,6 +8,7 @@
 #include "../common/CycleTimer.h"
 #include "../common/graph.h"
 
+#include <vector>
 
 // pageRank --
 //
@@ -22,8 +23,14 @@ void pageRank(Graph g, double* solution, double damping, double convergence)
   // initialize vertex weights to uniform probability. Double
   // precision scores are used to avoid underflow for large graphs
 
+  // int numNodes = num_nodes(g);
+  // double equal_prob = 1.0 / numNodes;
+  // for (int i = 0; i < numNodes; ++i) {
+  //   solution[i] = equal_prob;
+  // }
   int numNodes = num_nodes(g);
   double equal_prob = 1.0 / numNodes;
+#pragma omp parallel for
   for (int i = 0; i < numNodes; ++i) {
     solution[i] = equal_prob;
   }
@@ -55,4 +62,89 @@ void pageRank(Graph g, double* solution, double damping, double convergence)
      }
 
    */
+  // // vector<int> nodes_with_no_outgoing_edge;
+  // // for (int vi = 0; vi < numNodes; ++vi) {
+  // //   if (outgoing_size(g, vi) <= 0)
+  // //     nodes_with_no_outgoing_edge.push_back(vi);
+  // // }
+  // bool converged = false;
+  // double damping_value = (1.0 - damping) / numNodes;
+  // while (!converged) {
+  //   double global_diff = 0;
+  //   for (int vi = 0; vi < numNodes; ++vi) {
+  //     const Vertex* start = incoming_begin(g, vi);
+  //     const Vertex* end = incoming_end(g, vi);
+  //     double score_new = 0;
+  //     for (const Vertex* vj = start; vj != end; ++vj) {
+  //       score_new += solution[*vj] / outgoing_size(g, *vj);
+  //     }
+  //     score_new = (damping * score_new) + damping_value;
+  //     // for (int i = 0; i < nodes_with_no_outgoing_edge.size(); ++i) {
+  //     //   score_new += damping * solution[nodes_with_no_outgoing_edge[i]] / numNodes;
+  //     // }
+  //     global_diff += abs(score_new - solution[vi]);
+  //     solution[vi] = score_new;
+  //   }
+  //   converged = global_diff < convergence;
+  // }
+
+
+//   int thread_count = 1;
+//   bool converged = false;
+//   double damping_value = (1.0 - damping) / numNodes;
+//   ///iteration untill global diff less than convergence
+//   while (!converged) {
+//     double global_diff = 0;
+// #pragma omp parallel for num_threads(thread_count)
+// // #pragma omp parallel for num_threads(thread_count) schedule(static, 1)
+//     for (int vi = 0; vi < numNodes; ++vi) {
+//       ///loop over all the incoming edge 's node
+//       const Vertex* start = incoming_begin(g, vi);
+//       const Vertex* end = incoming_end(g, vi);
+//       double score_new = 0;
+//       for (const Vertex* vj = start; vj != end; ++vj) {
+//         score_new += solution[*vj] / outgoing_size(g, *vj);
+//       }
+//       score_new = (damping * score_new) + damping_value;
+// #pragma omp critical
+//       global_diff += abs(score_new - solution[vi]);
+// // #pragma omp atomic ///does it matter if reading an old value?
+//       solution[vi] = score_new;
+//     }
+//     converged = global_diff < convergence;
+//   }
+
+
+  std::vector<int> nodes_with_no_outgoing_edge;
+  for (int vi = 0; vi < numNodes; ++vi) {
+    if (outgoing_size(g, vi) <= 0)
+      nodes_with_no_outgoing_edge.push_back(vi);
+  }
+  bool converged = false;
+  double damping_value = (1.0 - damping) / numNodes;
+
+  while (!converged) {
+    double global_diff = 0;
+#pragma omp parallel for
+// #pragma omp parallel for num_threads(thread_count) schedule(static, 1)
+    for (int vi = 0; vi < numNodes; ++vi) {
+      ///loop over all the incoming edge 's node
+      const Vertex* start = incoming_begin(g, vi);
+      const Vertex* end = incoming_end(g, vi);
+      double score_new = 0;
+      for (const Vertex* vj = start; vj != end; ++vj) {
+        score_new += solution[*vj] / outgoing_size(g, *vj);
+      }
+      score_new = (damping * score_new) + damping_value;
+      ///loop over all the nodes with no outgoing edge
+      for (int i = 0; i < nodes_with_no_outgoing_edge.size(); ++i) {
+        score_new += damping * solution[nodes_with_no_outgoing_edge[i]] / numNodes;
+      }
+#pragma omp critical
+      global_diff += abs(score_new - solution[vi]);
+// #pragma omp critical ///does it matter if reading an old value?
+      solution[vi] = score_new;
+    }
+    converged = global_diff < convergence;
+  }
 }
