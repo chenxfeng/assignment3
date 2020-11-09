@@ -103,6 +103,7 @@ int main(int argc, char** argv) {
 
       // double* ref_scores = new double[graph_ref.vertices_per_process]; 
       // double* sol_scores = new double[graph_ref.vertices_per_process]; 
+      double* ref_scores = new double[graph.vertices_per_process];
       double* sol_scores = new double[graph.vertices_per_process];
 
       double best_time_ref = std::numeric_limits<double>::max();
@@ -112,6 +113,7 @@ int main(int argc, char** argv) {
       for (int i = 0; i < NUM_RUNS; ++i) {
         // memset(ref_scores, 0, graph_ref.vertices_per_process * sizeof(double));
         // memset(sol_scores, 0, graph_ref.vertices_per_process * sizeof(double));
+        memset(ref_scores, 0, graph.vertices_per_process * sizeof(double));
         memset(sol_scores, 0, graph.vertices_per_process * sizeof(double));
         
         // Ref timing
