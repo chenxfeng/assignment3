@@ -84,13 +84,13 @@ int main(int argc, char** argv) {
 
     // Running in silent mode, for grading
     if (argc > 4) {
-      DistGraphRef graph_ref(vertices_per_node,
-                      max_edges_per_vertex,
-                      type,
-                      world_size,
-                      world_rank);
+      // DistGraphRef graph_ref(vertices_per_node,
+      //                 max_edges_per_vertex,
+      //                 type,
+      //                 world_size,
+      //                 world_rank);
 
-      graph_ref.change_graph_representation();
+      // graph_ref.change_graph_representation();
 
 
       DistGraph graph(vertices_per_node,
@@ -101,16 +101,18 @@ int main(int argc, char** argv) {
 
       graph.setup();
 
-      double* ref_scores = new double[graph_ref.vertices_per_process]; 
-      double* sol_scores = new double[graph_ref.vertices_per_process]; 
+      // double* ref_scores = new double[graph_ref.vertices_per_process]; 
+      // double* sol_scores = new double[graph_ref.vertices_per_process]; 
+      double* sol_scores = new double[graph.vertices_per_process];
 
       double best_time_ref = std::numeric_limits<double>::max();
       double best_time_sol = std::numeric_limits<double>::max();
       bool failed = false;
 
       for (int i = 0; i < NUM_RUNS; ++i) {
-        memset(ref_scores, 0, graph_ref.vertices_per_process * sizeof(double));
-        memset(sol_scores, 0, graph_ref.vertices_per_process * sizeof(double));
+        // memset(ref_scores, 0, graph_ref.vertices_per_process * sizeof(double));
+        // memset(sol_scores, 0, graph_ref.vertices_per_process * sizeof(double));
+        memset(sol_scores, 0, graph.vertices_per_process * sizeof(double));
         
         // Ref timing
         MPI_Barrier(MPI_COMM_WORLD);
