@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
         MPI_Barrier(MPI_COMM_WORLD);
 
 	// run reference solution
-        pageRank_ref(graph_ref, ref_scores, PageRankDampening, PageRankConvergence);
+        // pageRank_ref(graph_ref, ref_scores, PageRankDampening, PageRankConvergence);
 
         MPI_Barrier(MPI_COMM_WORLD);
         double end_time_ref = MPI_Wtime();
@@ -144,41 +144,41 @@ int main(int argc, char** argv) {
 
         int mismatch = compareApprox(ref_scores, sol_scores, graph.vertices_per_process);
 
-        if (world_rank == MASTER) {
-          if (mismatch != graph.vertices_per_process) {
-            failed = true;
-            int mismatch_vertex = (MASTER * graph.vertices_per_process) + mismatch;
-            double mismatch_val = sol_scores[mismatch_vertex];
-            double expected_val = ref_scores[mismatch_vertex];
-            std::cerr << "Mismatch at vertex " << mismatch_vertex << ": Got " << mismatch_val << ", expected " <<
-                expected_val << "\n";
-          }
-        }
+        // if (world_rank == MASTER) {
+        //   if (mismatch != graph.vertices_per_process) {
+        //     failed = true;
+        //     int mismatch_vertex = (MASTER * graph.vertices_per_process) + mismatch;
+        //     double mismatch_val = sol_scores[mismatch_vertex];
+        //     double expected_val = ref_scores[mismatch_vertex];
+        //     std::cerr << "Mismatch at vertex " << mismatch_vertex << ": Got " << mismatch_val << ", expected " <<
+        //         expected_val << "\n";
+        //   }
+        // }
 
-        MPI_Barrier(MPI_COMM_WORLD);
-        if (world_rank == MASTER) {
-          for (int j = 1; j < world_size; j++) {
-            int mismatch_j;
-            double mismatch_val, expected_val;
-            MPI_Status status;
-            MPI_Recv(&mismatch_j, 1, MPI_INT, j, 0, MPI_COMM_WORLD, &status);
+        // MPI_Barrier(MPI_COMM_WORLD);
+        // if (world_rank == MASTER) {
+        //   for (int j = 1; j < world_size; j++) {
+        //     int mismatch_j;
+        //     double mismatch_val, expected_val;
+        //     MPI_Status status;
+        //     MPI_Recv(&mismatch_j, 1, MPI_INT, j, 0, MPI_COMM_WORLD, &status);
 
-            if (mismatch_j != graph.vertices_per_process) {
-              MPI_Recv(&mismatch_val, 1, MPI_DOUBLE, j, 0, MPI_COMM_WORLD, &status);
-              MPI_Recv(&expected_val, 1, MPI_DOUBLE, j, 0, MPI_COMM_WORLD, &status);
-              std::cerr << "Mismatch at vertex " << j * graph.vertices_per_process
-                + mismatch_j << ": Got " << mismatch_val << ", expected " <<
-                expected_val << "\n";
-              failed = true;
-            }
-          }
-        } else {
-          MPI_Send(&mismatch, 1, MPI_INT, MASTER, 0, MPI_COMM_WORLD);
-          if (mismatch != graph.vertices_per_process) {
-            MPI_Send(&sol_scores[mismatch], 1, MPI_DOUBLE, MASTER, 0, MPI_COMM_WORLD);
-            MPI_Send(&ref_scores[mismatch], 1, MPI_DOUBLE, MASTER, 0, MPI_COMM_WORLD);
-          }
-        }
+        //     if (mismatch_j != graph.vertices_per_process) {
+        //       MPI_Recv(&mismatch_val, 1, MPI_DOUBLE, j, 0, MPI_COMM_WORLD, &status);
+        //       MPI_Recv(&expected_val, 1, MPI_DOUBLE, j, 0, MPI_COMM_WORLD, &status);
+        //       std::cerr << "Mismatch at vertex " << j * graph.vertices_per_process
+        //         + mismatch_j << ": Got " << mismatch_val << ", expected " <<
+        //         expected_val << "\n";
+        //       failed = true;
+        //     }
+        //   }
+        // } else {
+        //   MPI_Send(&mismatch, 1, MPI_INT, MASTER, 0, MPI_COMM_WORLD);
+        //   if (mismatch != graph.vertices_per_process) {
+        //     MPI_Send(&sol_scores[mismatch], 1, MPI_DOUBLE, MASTER, 0, MPI_COMM_WORLD);
+        //     MPI_Send(&ref_scores[mismatch], 1, MPI_DOUBLE, MASTER, 0, MPI_COMM_WORLD);
+        //   }
+        // }
 
         int failed_int;
         if (world_rank == MASTER) {

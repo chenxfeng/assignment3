@@ -57,6 +57,8 @@ public:
     // Called after in_edges and out_edges are initialized. May be
     // useful for students to precompute/build additional structures
     void setup();
+    ///add data structure
+    std::vector<std::vector<int> > edges;
 };
 
 // generates a distributed graph of the given graph type (uniform,
@@ -353,6 +355,7 @@ void DistGraph::generate_graph_clustered() {
  */
 inline
 void DistGraph::setup() {
+    printf("hello from %d\n", world_rank);
 
   // This method is called after in_edges and out_edges
   // have been initialized.  This is the point where student code may wish

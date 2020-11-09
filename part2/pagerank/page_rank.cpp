@@ -20,7 +20,7 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
     // Each node in the cluster is only aware of the outgoing edge
     // topology for the vertices it "owns".  The cluster nodes will
     // need to coordinate to determine what information.
- 
+
     // note: we give you starter code below to initialize scores for
     // ALL VERTICES in the graph, but feel free to modify as desired.
     // Keep in mind the `solution` array returned to the caller should
@@ -72,4 +72,9 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
     // Fill in solution with the scores of the vertices belonging to this node.
 
     */
+    // vector<int> nodes_with_no_outgoing_edge;
+    // for (int vi = 0; vi < totalVertices; ++vi) {
+    //   if (outgoing_size(g, vi) <= 0)
+    //     nodes_with_no_outgoing_edge.push_back(vi);
+    // }
 }
