@@ -91,6 +91,8 @@ if (g.world_rank == 0) printf("iteration begin\n");
             local_diff += fabs(score_next[vi - g.start_vertex] - score_curr[vi]);
             score_curr[vi] = score_next[vi - g.start_vertex];
         }
+if (g.world_rank == 0) 
+    printf("local_diff: %f\n", local_diff);
         ///all reduce the local_diff value to global_diff
         double global_diff;
         MPI_Allreduce(&local_diff, &global_diff, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
