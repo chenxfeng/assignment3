@@ -134,7 +134,7 @@ void DistGraph::get_incoming_edges(const std::vector<std::vector<Edge>> &edge_sc
     // helpful reminders of MPI send and receive syntax
 
     int MPI_Isend(void* buf, int count, MPI_Datatype datatype, int dest,
-                          int tag, MPI_Comm, comm, MPI_Request *request)
+                          int tag, MPI_Comm comm, MPI_Request *request)
 
     int MPI_Irecv(void *buf, int count, MPI_Datatype datatype, int source,
                   int tag, MPI_Comm comm, MPI_Request *request)
@@ -468,7 +468,7 @@ void DistGraph::setup() {
             }
         }
     }
-    ///check messages sent are all received
+    ///check whether messages sent are all received
     for (size_t i = 0; i < send_bufs.size(); i++) {
         MPI_Status status;
         MPI_Wait(&send_reqs[send_idx[i]], &status);
