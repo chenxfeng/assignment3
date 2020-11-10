@@ -9,6 +9,8 @@
 #include <cmath>
 #include <iostream>
 
+#include <map>
+
 #include "graph_dist_ref.h"
 
 using Vertex = int;
