@@ -57,8 +57,10 @@ public:
     // Called after in_edges and out_edges are initialized. May be
     // useful for students to precompute/build additional structures
     void setup();
-    ///add data structure
-    std::vector<std::vector<int> > edges;
+    ///add data structure: incoming edges of every local vertex
+    std::vector<std::vector<int> > v_in_edges;
+    ///add data structure: outgoing edges of every local vertex
+    std::vector<std::vector<int> > v_out_edges;
 };
 
 // generates a distributed graph of the given graph type (uniform,
@@ -355,15 +357,33 @@ void DistGraph::generate_graph_clustered() {
  */
 inline
 void DistGraph::setup() {
-    printf("hello from %d\n", world_rank);
+  printf("hello from %d\n", world_rank);
+  if (world_rank == 0) {
     for (int i = 0; i < in_edges.size(); ++i) {
-        printf("edge %d: %d -> %d in process %d\n", i, in_edges[i].src, in_edges[i].dest, world_rank);
+      printf("edge %d: %d -> %d\n", i, in_edges[i].src, in_edges[i].dest);
     }
+  }
 
   // This method is called after in_edges and out_edges
   // have been initialized.  This is the point where student code may wish
   // to setup its data structures, precompute anythign about the
   // topology, or put the graph in the desired form for future computation.
+  v_in_edges.resize(vertices_per_process);
+  for (int i = 0; i < in_edges.size(); ++i) {
+    v_in_edges[in_edges[i].dest - start_vertex].push_back(in_edges[i].src);
+  }
+  v_out_edges.resize(vertices_per_process);
+  for (int i = 0; i < out_edges.size(); ++i) {
+    v_out_edges[out_edges[i].src - start_vertex].push_back(out_edges[i].dest);
+  }
+
+  if (world_rank == 0) {
+    for (int i = start_vertex; i <= end_vertex; ++i) {
+        for (int j = 0; j < v_in_edges[i].size(); ++j) {
+            printf("vertex %d incoming edge from %d", i, v_in_edges[i][j]);
+        }
+    }
+  }
 }
 
 #endif
