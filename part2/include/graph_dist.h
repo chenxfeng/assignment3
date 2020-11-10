@@ -385,14 +385,16 @@ void DistGraph::setup() {
         if (v_to_out_degree.count(in_edges[i].src) == 0)
             v_to_out_degree[in_edges[i].src] = -1;
         ///recv message from process with src vertex
-        if (recv_process_ids.count(get_vertex_owner_rank(in_edges[i].src)) == 0)
+        if (recv_process_ids.count(get_vertex_owner_rank(in_edges[i].src)) == 0
+            && get_vertex_owner_rank(in_edges[i].src) != world_rank)
             recv_process_ids.insert(get_vertex_owner_rank(in_edges[i].src));
     }
     v_out_edges.resize(vertices_per_process);
     for (int i = 0; i < out_edges.size(); ++i) {
         v_out_edges[out_edges[i].src - start_vertex].push_back(out_edges[i].dest);
         ///send message to process with dest vertex
-        if (send_process_ids.count(get_vertex_owner_rank(out_edges[i].dest)) == 0) 
+        if (send_process_ids.count(get_vertex_owner_rank(out_edges[i].dest)) == 0
+            && get_vertex_owner_rank(out_edges[i].dest) != world_rank) 
             send_process_ids.insert(get_vertex_owner_rank(out_edges[i].dest));
     }
     for (int i = start_vertex; i <= end_vertex; ++i) {
