@@ -407,7 +407,7 @@ void DistGraph::setup() {
     if (v_no_out_edge.size()) { ///send message to all process
         send_process_ids.clear();
         for (int i = 0; i < world_size && i != world_rank; ++i) {
-            send_process_ids.push_back(i);
+            send_process_ids.insert(i);
         }
     }
     // if (world_rank == 0) {
