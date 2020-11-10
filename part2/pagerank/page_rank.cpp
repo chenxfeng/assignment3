@@ -155,7 +155,8 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
             score_curr[vi] = score_next[vi - g.start_vertex];
         }
         ///all reduce the local_diff value to global_diff
-        double global_diff;
+        double global_diff = 0;
+if (g.world_rank == 0) printf("global_diff: %f, local_diff: %f\n", global_diff, local_diff);
         MPI_Allreduce(&local_diff, &global_diff, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
         converged = global_diff < convergence;
         ///communicate for result of this iteration
