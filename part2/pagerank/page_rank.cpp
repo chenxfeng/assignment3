@@ -74,6 +74,8 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
 
     */
     while (!converged) {
+        if (g.world_rank == 0) printf("iteration\n");
+
         double local_diff = 0;///need mpi_all_reduce
         for (int vi = g.start_vertex; vi <= g.end_vertex; ++vi) {
             score_next[vi - g.start_vertex] = 0;
