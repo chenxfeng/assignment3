@@ -92,7 +92,7 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
             local_diff += abs(score_next[vi - g.start_vertex] - score_curr[vi]);
             if (g.world_rank == 0)
                 printf("%f, %f, %f\n", local_diff, score_next[vi - g.start_vertex] - score_curr[vi],
-                    abs(score_next[vi - g.start_vertex] - score_curr[vi]));
+                    fabs(score_next[vi - g.start_vertex] - score_curr[vi]));
             score_curr[vi] = score_next[vi - g.start_vertex];
         }
         ///all reduce the local_diff value to global_diff
