@@ -74,8 +74,6 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
 
     */
     while (!converged) {
-        if (g.world_rank == 0) printf("iteration\n");
-
         double local_diff = 0;///need mpi_all_reduce
         for (int vi = g.start_vertex; vi <= g.end_vertex; ++vi) {
             score_next[vi - g.start_vertex] = 0;
@@ -92,6 +90,7 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
             local_diff += fabs(score_next[vi - g.start_vertex] - score_curr[vi]);
             score_curr[vi] = score_next[vi - g.start_vertex];
         }
+if (g.world_rank == 0) printf("iteration\n");
         ///all reduce the local_diff value to global_diff
         double global_diff;
         MPI_Allreduce(&local_diff, &global_diff, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
@@ -133,7 +132,8 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
             delete(probe_status);
         }
 
-        if (g.world_rank == 0) printf("global_diff: %f, local_diff: %f\n", global_diff, local_diff);
+        if (g.world_rank == 0) 
+            printf("global_diff: %f, local_diff: %f, %f\n", global_diff, local_diff, convergence);
     }
 //     while (!converged) {
 //         double local_diff = 0;///need mpi_all_reduce
