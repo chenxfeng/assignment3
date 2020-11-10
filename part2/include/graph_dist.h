@@ -357,7 +357,7 @@ inline
 void DistGraph::setup() {
     printf("hello from %d\n", world_rank);
     for (int i = 0; i < in_edges.size(); ++i) {
-        printf("edge %d: %d -> %d\n", i, in_edges[i].src, in_edges[i].dest);
+        printf("edge %d: %d -> %d in process %d\n", i, in_edges[i].src, in_edges[i].dest, world_rank);
     }
 
   // This method is called after in_edges and out_edges
