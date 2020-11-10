@@ -73,10 +73,70 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
     // Fill in solution with the scores of the vertices belonging to this node.
 
     */
-    while (!converged) {
-        if (g.world_rank == 0) printf("iteration\n");
+    // while (!converged) {
+    //     if (g.world_rank == 0) printf("iteration\n");
 
+    //     double local_diff = 0;///need mpi_all_reduce
+    //     for (int vi = g.start_vertex; vi <= g.end_vertex; ++vi) {
+    //         score_next[vi - g.start_vertex] = 0;
+    //         ///loop over all the incoming edge 's node of local vertex
+    //         for (int i = 0; i < g.v_in_edges[vi - g.start_vertex].size(); ++i) {
+    //             score_next[vi - g.start_vertex] += score_curr[g.v_in_edges[vi - g.start_vertex][i]] 
+    //                                         / g.v_to_out_degree[g.v_in_edges[vi - g.start_vertex][i]];
+    //         }
+    //         score_next[vi - g.start_vertex] = damping * score_next[vi - g.start_vertex] + damping_value;
+    //         ///loop over all the nodes with no outgoing edge
+    //         for (int i = 0; i < g.v_no_out_edge.size(); ++i) {
+    //             score_next[vi - g.start_vertex] += damping * score_curr[g.v_no_out_edge[i]] / totalVertices;
+    //         }
+    //         local_diff += abs(score_next[vi - g.start_vertex] - score_curr[vi]);
+    //         score_curr[vi] = score_next[vi - g.start_vertex];
+    //     }
+    //     ///all reduce the local_diff value to global_diff
+    //     double global_diff;
+    //     MPI_Allreduce(&local_diff, &global_diff, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    //     converged = global_diff < convergence;
+    //     ///communicate for result of this iteration
+    //     if (!converged) {
+    //         double * send_buf = score_next.data();
+    //         double * recv_bufs = score_curr.data();            
+    //         ///bcast new score of local vertex
+    //         MPI_Request* send_reqs = new MPI_Request[g.world_size];
+    //         for (int i = 0; i < g.world_size; ++i) {
+    //             if (g.send_process_ids.count(i)) {
+    //                 MPI_Isend(send_buf, vertices_per_process, MPI_DOUBLE, 
+    //                     i, 0, MPI_COMM_WORLD, &send_reqs[i]);
+    //             }
+    //         }
+    //         ///recv new score from other nodes
+    //         MPI_Status* probe_status = new MPI_Status[g.world_size];
+    //         for (int i = 0; i < g.world_size; ++i) {
+    //             if (g.recv_process_ids.count(i)) {
+    //                 ///probe and wait for message from process i
+    //                 MPI_Status status;
+    //                 MPI_Probe(i, 0, MPI_COMM_WORLD, &probe_status[i]);
+    //                 int num_vals = 0;///must be equal to vertices_per_process
+    //                 MPI_Get_count(&probe_status[i], MPI_DOUBLE, &num_vals);
+    //                 assert(num_vals == vertices_per_process);
+    //                 MPI_Recv(recv_bufs + vertices_per_process*i, num_vals, MPI_DOUBLE,
+    //                     probe_status[i].MPI_SOURCE, probe_status[i].MPI_TAG, MPI_COMM_WORLD, &status);
+    //             }
+    //         }
+    //         ///check whether messages sent are all received
+    //         for (int i = 0; i < g.world_size; ++i) {
+    //             if (g.send_process_ids.count(i)) {
+    //                 MPI_Status status;
+    //                 MPI_Wait(&send_reqs[i], &status);
+    //             }
+    //         }
+    //         delete(send_reqs);
+    //         delete(probe_status);
+    //     }
+    // }
+    while (!converged) {
         double local_diff = 0;///need mpi_all_reduce
+#pragma omp parallel for
+// #pragma omp parallel for num_threads(thread_count) schedule(static, 1)
         for (int vi = g.start_vertex; vi <= g.end_vertex; ++vi) {
             score_next[vi - g.start_vertex] = 0;
             ///loop over all the incoming edge 's node of local vertex
@@ -89,7 +149,9 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
             for (int i = 0; i < g.v_no_out_edge.size(); ++i) {
                 score_next[vi - g.start_vertex] += damping * score_curr[g.v_no_out_edge[i]] / totalVertices;
             }
+#pragma omp critical
             local_diff += abs(score_next[vi - g.start_vertex] - score_curr[vi]);
+// #pragma omp critical ///does it matter if reading an old value?
             score_curr[vi] = score_next[vi - g.start_vertex];
         }
         ///all reduce the local_diff value to global_diff
@@ -132,5 +194,7 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
             delete(send_reqs);
             delete(probe_status);
         }
+
+        if (g.world_rank == 0) printf("global_diff: %f, local_diff: %f\n", global_diff, local_diff);
     }
 }
