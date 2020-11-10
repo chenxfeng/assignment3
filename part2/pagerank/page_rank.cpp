@@ -123,6 +123,10 @@ if (g.world_rank == 0) printf("iteration\n");
                     assert(num_vals == vertices_per_process);
                     MPI_Recv(recv_bufs + vertices_per_process*i, num_vals, MPI_DOUBLE,
                         probe_status[i].MPI_SOURCE, probe_status[i].MPI_TAG, MPI_COMM_WORLD, &status);
+                    if (g.world_rank == 0) {
+                        for (int j = 0; j < num_vals; ++j) printf("%f ", score_curr[vertices_per_process*i+j]);
+                        printf("\n");
+                    }
                 }
             }
             ///check whether messages sent are all received
@@ -135,9 +139,6 @@ if (g.world_rank == 0) printf("iteration\n");
             delete(send_reqs);
             delete(probe_status);
         }
-
-        if (g.world_rank == 0) 
-            printf("global_diff: %f, local_diff: %f, %f\n", global_diff, local_diff, convergence);
     }
 //     while (!converged) {
 //         double local_diff = 0;///need mpi_all_reduce
