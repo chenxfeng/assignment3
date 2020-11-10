@@ -102,6 +102,7 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
             MPI_Request* send_reqs = new MPI_Request[g.world_size];
             for (int i = 0; i < g.world_size; ++i) {
                 if (g.send_process_ids.count(i)) {
+                    if (g.world_rank == 0) printf("send %d\n", i);
                     MPI_Isend(send_buf, vertices_per_process, MPI_DOUBLE, 
                         i, 0, MPI_COMM_WORLD, &send_reqs[i]);
                 }
