@@ -67,6 +67,10 @@ public:
     std::vector<std::vector<int> > v_out_edges;//the size of inner vector is out-degree
     ///data structure: local vertex with no outgoing edge
     std::vector<int> v_no_out_edge;
+    ///data structure: send message to process with dst vertex of outgoing edge
+    std::set<int> send_process_ids;
+    ///data structure: recv message from process with src vertex of incoming edge
+    std::set<int> recv_process_ids;
 };
 
 // generates a distributed graph of the given graph type (uniform,
@@ -380,10 +384,16 @@ void DistGraph::setup() {
         ///collect all src vertex of incomming edge
         if (v_to_out_degree.count(in_edges[i].src) == 0)
             v_to_out_degree[in_edges[i].src] = -1;
+        ///recv message from process with src vertex
+        if (recv_process_ids.count(get_vertex_owner_rank(in_edges[i].src)) == 0)
+            recv_process_ids.insert(get_vertex_owner_rank(in_edges[i].src));
     }
     v_out_edges.resize(vertices_per_process);
     for (int i = 0; i < out_edges.size(); ++i) {
         v_out_edges[out_edges[i].src - start_vertex].push_back(out_edges[i].dest);
+        ///send message to process with dest vertex
+        if (send_process_ids.count(get_vertex_owner_rank(out_edges[i].dest)) == 0) 
+            send_process_ids.insert(get_vertex_owner_rank(out_edges[i].dest));
     }
     for (int i = start_vertex; i <= end_vertex; ++i) {
         if (v_out_edges[i].empty()) 
@@ -391,18 +401,24 @@ void DistGraph::setup() {
         if (v_to_out_degree.count(i) > 0)
             v_to_out_degree[i] = v_out_edges[i - start_vertex].size();
     }
-    if (world_rank == 0) {
-        // for (int i = start_vertex; i <= end_vertex; ++i) {
-        //     for (int j = 0; j < v_in_edges[i].size(); ++j) {
-        //         printf("vertex %d incoming edge from %d\n", i, v_in_edges[i][j]);
-        //     }
-        // }
-        for (int i = start_vertex; i <= end_vertex; ++i) {
-            for (int j = 0; j < v_out_edges[i].size(); ++j) {
-                printf("vertex %d outgoing edge to %d\n", i, v_out_edges[i][j]);
-            }
-        }
+    for (auto &e: recv_process_ids) {
+        printf("recv process id : %d\n", e);
     }
+    for (auto &e: send_process_ids) {
+        printf("send process id : %d\n", e);
+    }
+    // if (world_rank == 0) {
+    //     for (int i = start_vertex; i <= end_vertex; ++i) {
+    //         for (int j = 0; j < v_in_edges[i].size(); ++j) {
+    //             printf("vertex %d incoming edge from %d\n", i, v_in_edges[i][j]);
+    //         }
+    //     }
+    //     for (int i = start_vertex; i <= end_vertex; ++i) {
+    //         for (int j = 0; j < v_out_edges[i].size(); ++j) {
+    //             printf("vertex %d outgoing edge to %d\n", i, v_out_edges[i][j]);
+    //         }
+    //     }
+    // }
     ///broadcast the out-degree
     std::vector<int*> send_bufs;
     std::vector<int> send_idx;
@@ -460,13 +476,12 @@ void DistGraph::setup() {
     }
     delete(send_reqs);
     delete(probe_status);
-
-    if (world_rank == 0) {
-        for (auto it = v_to_out_degree.begin(); it != v_to_out_degree.end(); ++it) {
-            printf("src vertex %d of incoming edge with out-degree %d\n", 
-                it->first, it->second);
-        }
-    }
+    // if (world_rank == 0) {
+    //     for (auto it = v_to_out_degree.begin(); it != v_to_out_degree.end(); ++it) {
+    //         printf("src vertex %d of incoming edge with out-degree %d\n", 
+    //             it->first, it->second);
+    //     }
+    // }
 }
 
 #endif
