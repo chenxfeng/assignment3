@@ -94,9 +94,10 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
         double global_diff;
         MPI_Allreduce(&local_diff, &global_diff, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
         converged = global_diff < convergence;
+if (g.world_rank == 0) 
+    printf("global_diff: %f, local_diff: %f, %f\n", global_diff, local_diff, convergence);
         ///communicate for result of this iteration
         if (!converged) {
-if (g.world_rank == 0) printf("communication begin\n");
             double * send_buf = score_next.data();
             double * recv_bufs = score_curr.data();            
             ///bcast new score of local vertex
