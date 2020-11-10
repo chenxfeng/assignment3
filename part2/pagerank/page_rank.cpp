@@ -96,6 +96,7 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
         converged = global_diff < convergence;
         ///communicate for result of this iteration
         if (!converged) {
+if (g.world_rank == 0) printf("communication begin\n");
             double * send_buf = score_next.data();
             double * recv_bufs = score_curr.data();            
             ///bcast new score of local vertex
