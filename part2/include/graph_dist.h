@@ -57,10 +57,14 @@ public:
     // Called after in_edges and out_edges are initialized. May be
     // useful for students to precompute/build additional structures
     void setup();
-    ///add data structure: incoming edges of every local vertex
+    ///data structure: incoming edges of every local vertex
     std::vector<std::vector<int> > v_in_edges;
-    ///add data structure: outgoing edges of every local vertex
-    std::vector<std::vector<int> > v_out_edges;
+    ///data structure: out-degree of src vertex of incoming edge
+    std::map<int, int> v_to_out_degree;
+    ///data structure: outgoing edges of every local vertex
+    std::vector<std::vector<int> > v_out_edges;//the size of inner vector is out-degree
+    ///data structure: local vertex with no outgoing edge
+    std::vector<int> v_no_out_edge;
 };
 
 // generates a distributed graph of the given graph type (uniform,
@@ -357,33 +361,105 @@ void DistGraph::generate_graph_clustered() {
  */
 inline
 void DistGraph::setup() {
-  printf("hello from %d\n", world_rank);
-  if (world_rank == 0) {
+    // This method is called after in_edges and out_edges
+    // have been initialized.  This is the point where student code may wish
+    // to setup its data structures, precompute anythign about the
+    // topology, or put the graph in the desired form for future computation.
+    printf("hello from %d\n", world_rank);
+    // if (world_rank == 0) {
+    //   for (int i = 0; i < in_edges.size(); ++i) {
+    //     printf("edge %d: %d -> %d\n", i, in_edges[i].src, in_edges[i].dest);
+    //   }
+    // }
+
+    v_in_edges.resize(vertices_per_process);
     for (int i = 0; i < in_edges.size(); ++i) {
-      printf("edge %d: %d -> %d\n", i, in_edges[i].src, in_edges[i].dest);
+        v_in_edges[in_edges[i].dest - start_vertex].push_back(in_edges[i].src);
+        ///collect all src vertex of incomming edge
+        if (v_to_out_degree.count(in_edges[i].src) == 0)
+            v_to_out_degree[v_to_out_degree] = -1;
     }
-  }
-
-  // This method is called after in_edges and out_edges
-  // have been initialized.  This is the point where student code may wish
-  // to setup its data structures, precompute anythign about the
-  // topology, or put the graph in the desired form for future computation.
-  v_in_edges.resize(vertices_per_process);
-  for (int i = 0; i < in_edges.size(); ++i) {
-    v_in_edges[in_edges[i].dest - start_vertex].push_back(in_edges[i].src);
-  }
-  v_out_edges.resize(vertices_per_process);
-  for (int i = 0; i < out_edges.size(); ++i) {
-    v_out_edges[out_edges[i].src - start_vertex].push_back(out_edges[i].dest);
-  }
-
-  if (world_rank == 0) {
+    v_out_edges.resize(vertices_per_process);
+    for (int i = 0; i < out_edges.size(); ++i) {
+        v_out_edges[out_edges[i].src - start_vertex].push_back(out_edges[i].dest);
+    }
     for (int i = start_vertex; i <= end_vertex; ++i) {
-        for (int j = 0; j < v_in_edges[i].size(); ++j) {
-            printf("vertex %d incoming edge from %d\n", i, v_in_edges[i][j]);
+        if (v_out_edges[i].empty()) 
+            v_no_out_edge.push_back(i);
+        if (v_to_out_degree.count(i) > 0)
+            v_to_out_degree[i] = v_out_edges[i - start_vertex].size();
+    }
+    // if (world_rank == 0) {
+    //   for (int i = start_vertex; i <= end_vertex; ++i) {
+    //       for (int j = 0; j < v_in_edges[i].size(); ++j) {
+    //           printf("vertex %d incoming edge from %d\n", i, v_in_edges[i][j]);
+    //       }
+    //   }
+    // }
+    ///broadcast the out-degree
+    std::vector<int*> send_bufs;
+    std::vector<int> send_idx;
+    std::vector<int*> recv_bufs;
+    MPI_Request* send_reqs = new MPI_Request[world_size];
+    MPI_Status* probe_status = new MPI_Status[world_size];
+    ///broadcast out-degree to all other processes
+    for (int i = 0; i < world_size; i++) {
+        if (i != world_rank) {
+            int* send_buf = new int[vertices_per_process];
+
+            send_bufs.push_back(send_buf);
+            send_idx.push_back(i);
+
+            for (size_t j = start_vertex; j <= end_vertex; ++j) {
+                send_buf[j - start_vertex] = v_out_edges[j - start_vertex].size();
+            }
+
+            MPI_Isend(send_buf, vertices_per_process, MPI_INT,
+                      i, 0, MPI_COMM_WORLD, &send_reqs[i]);
         }
     }
-  }
+    ///recv out-degree from all other processes
+    for (int i = 0; i < world_size; i++) {
+        if (i != world_rank) {
+            MPI_Status status;
+            MPI_Probe(i, 0, MPI_COMM_WORLD, &probe_status[i]);///probe and wait for message from i
+            int num_vals = 0;
+            MPI_Get_count(&probe_status[i], MPI_INT, &num_vals);
+
+            int* recv_buf = new int[num_vals];
+            recv_bufs.push_back(recv_buf);
+
+            MPI_Recv(recv_buf, num_vals, MPI_INT, probe_status[i].MPI_SOURCE,
+                     probe_status[i].MPI_TAG, MPI_COMM_WORLD, &status);
+
+            for (int j = 0; j < num_vals; ++j) {
+                ///update the out degree of src vertex from incoming edge
+                if (v_to_out_degree.count(i*vertices_per_process + j) > 0) 
+                    v_to_out_degree[i*vertices_per_process + j] = recv_buf[j];
+                ///vertex without outgoing edge
+                if (recv_buf[j] == 0)
+                    v_no_out_edge.push_back(i*vertices_per_process + j);
+            }
+        }
+    }
+    ///check messages sent are all received
+    for (size_t i = 0; i < send_bufs.size(); i++) {
+        MPI_Status status;
+        MPI_Wait(&send_reqs[send_idx[i]], &status);
+        delete(send_bufs[i]);
+    }
+    for (size_t i = 0; i < recv_bufs.size(); i++) {
+        delete(recv_bufs[i]);
+    }
+    delete(send_reqs);
+    delete(probe_status);
+
+    if (world_rank == 0) {
+        for (auto it = v_to_out_degree.begin(); it != v_to_out_degree.end(); ++it) {
+            printf("src vertex %d of incoming edge with out-degree %d\n", 
+                it->first, it->second);
+        }
+    }
 }
 
 #endif
