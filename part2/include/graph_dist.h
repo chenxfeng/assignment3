@@ -356,6 +356,9 @@ void DistGraph::generate_graph_clustered() {
 inline
 void DistGraph::setup() {
     printf("hello from %d\n", world_rank);
+    for (int i = 0; i < in_edges.size(); ++i) {
+        printf("edge %d: %d -> %d\n", i, in_edges[i].src, in_edges[i].dst);
+    }
 
   // This method is called after in_edges and out_edges
   // have been initialized.  This is the point where student code may wish
