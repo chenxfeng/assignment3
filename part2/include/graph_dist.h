@@ -379,7 +379,7 @@ void DistGraph::setup() {
         v_in_edges[in_edges[i].dest - start_vertex].push_back(in_edges[i].src);
         ///collect all src vertex of incomming edge
         if (v_to_out_degree.count(in_edges[i].src) == 0)
-            v_to_out_degree[v_to_out_degree] = -1;
+            v_to_out_degree[in_edges[i].src] = -1;
     }
     v_out_edges.resize(vertices_per_process);
     for (int i = 0; i < out_edges.size(); ++i) {
