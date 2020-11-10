@@ -80,7 +80,7 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
             ///loop over all the incoming edge 's node of local vertex
             for (int i = 0; i < g.v_in_edges[vi - g.start_vertex].size(); ++i) {
                 score_next[vi - g.start_vertex] += score_curr[g.v_in_edges[vi - g.start_vertex][i]] 
-                                            / v_to_out_degree[g.v_in_edges[vi - g.start_vertex][i]];
+                                            / g.v_to_out_degree[g.v_in_edges[vi - g.start_vertex][i]];
             }
             score_next[vi - g.start_vertex] = damping * score_next[vi - g.start_vertex] + damping_value;
             ///loop over all the nodes with no outgoing edge
