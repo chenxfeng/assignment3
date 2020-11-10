@@ -74,6 +74,7 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
 
     */
     while (!converged) {
+if (g.world_rank == 0) printf("iteration begin\n");
         double local_diff = 0;///need mpi_all_reduce
         for (int vi = g.start_vertex; vi <= g.end_vertex; ++vi) {
             score_next[vi - g.start_vertex] = 0;
@@ -109,7 +110,6 @@ if (g.world_rank == 0)
                         i, 0, MPI_COMM_WORLD, &send_reqs[i]);
                 }
             }
-if (g.world_rank == 0) printf("iteration\n");
             ///recv new score from other nodes
             MPI_Status* probe_status = new MPI_Status[g.world_size];
             for (int i = 0; i < g.world_size; ++i) {
@@ -123,10 +123,10 @@ if (g.world_rank == 0) printf("iteration\n");
                     assert(num_vals == vertices_per_process);
                     MPI_Recv(recv_bufs + vertices_per_process*i, num_vals, MPI_DOUBLE,
                         probe_status[i].MPI_SOURCE, probe_status[i].MPI_TAG, MPI_COMM_WORLD, &status);
-                    if (g.world_rank == 0) {
-                        for (int j = 0; j < num_vals; ++j) printf("%f ", score_curr[vertices_per_process*i+j]);
-                        printf("\n");
-                    }
+                    // if (g.world_rank == 0) {
+                    //     for (int j = 0; j < num_vals; ++j) printf("%f ", score_curr[vertices_per_process*i+j]);
+                    //     printf("\n");
+                    // }
                 }
             }
             ///check whether messages sent are all received
