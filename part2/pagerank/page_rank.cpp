@@ -87,12 +87,7 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
             for (int i = 0; i < g.v_no_out_edge.size(); ++i) {
                 score_next[vi - g.start_vertex] += damping * score_curr[g.v_no_out_edge[i]] / totalVertices;
             }
-            if (g.world_rank == 0) 
-                printf("%d, %f, %f\n", vi, score_next[vi - g.start_vertex], score_curr[vi]);
-            local_diff += abs(score_next[vi - g.start_vertex] - score_curr[vi]);
-            if (g.world_rank == 0)
-                printf("%f, %f, %f\n", local_diff, score_next[vi - g.start_vertex] - score_curr[vi],
-                    fabs(score_next[vi - g.start_vertex] - score_curr[vi]));
+            local_diff += fabs(score_next[vi - g.start_vertex] - score_curr[vi]);
             score_curr[vi] = score_next[vi - g.start_vertex];
         }
         ///all reduce the local_diff value to global_diff
