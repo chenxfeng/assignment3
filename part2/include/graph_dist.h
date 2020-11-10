@@ -398,16 +398,17 @@ void DistGraph::setup() {
             send_process_ids.insert(get_vertex_owner_rank(out_edges[i].dest));
     }
     for (int i = start_vertex; i <= end_vertex; ++i) {
-        if (v_out_edges[i].empty()) 
+        if (v_out_edges[i].empty()) {
             v_no_out_edge.push_back(i);
+        }
         if (v_to_out_degree.count(i) > 0)
             v_to_out_degree[i] = v_out_edges[i - start_vertex].size();
     }
-    for (auto &e: recv_process_ids) {
-        printf("recv process id : %d\n", e);
-    }
-    for (auto &e: send_process_ids) {
-        printf("send process id : %d\n", e);
+    if (v_no_out_edge.size()) { ///send message to all process
+        send_process_ids.clear();
+        for (int i = 0; i < world_size && i != world_rank; ++i) {
+            send_process_ids.push_back(i);
+        }
     }
     // if (world_rank == 0) {
     //     for (int i = start_vertex; i <= end_vertex; ++i) {
@@ -484,6 +485,18 @@ void DistGraph::setup() {
     //             it->first, it->second);
     //     }
     // }
+    for (int i = 0; i < v_no_out_edge.size(); ++i) {
+        ///recv message from process with vertex without outgoing edge
+        if (recv_process_ids.count(get_vertex_owner_rank(v_no_out_edge[i])) == 0
+            && get_vertex_owner_rank(v_no_out_edge[i]) != world_rank)
+            recv_process_ids.insert(get_vertex_owner_rank(v_no_out_edge[i]));
+    }
+    for (auto &e: recv_process_ids) {
+        printf("recv process id : %d\n", e);
+    }
+    for (auto &e: send_process_ids) {
+        printf("send process id : %d\n", e);
+    }
 }
 
 #endif
