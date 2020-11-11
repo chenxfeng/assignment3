@@ -497,14 +497,14 @@ void DistGraph::setup() {
             && get_vertex_owner_rank(v_no_out_edge[i]) != world_rank)
             recv_process_ids.insert(get_vertex_owner_rank(v_no_out_edge[i]));
     }
-    if (world_rank == 2) {
-        for (auto &e: recv_process_ids) {
-            printf("recv process id : %d\n", e);
-        }
-        for (auto &e: send_process_ids) {
-            printf("send process id : %d\n", e);
-        }
-    }
+    // if (world_rank == 2) {
+    //     for (auto &e: recv_process_ids) {
+    //         printf("recv process id : %d\n", e);
+    //     }
+    //     for (auto &e: send_process_ids) {
+    //         printf("send process id : %d\n", e);
+    //     }
+    // }
 }
 
 #endif
