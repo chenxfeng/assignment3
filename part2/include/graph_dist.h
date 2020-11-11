@@ -377,6 +377,11 @@ void DistGraph::setup() {
     //     printf("edge %d: %d -> %d\n", i, in_edges[i].src, in_edges[i].dest);
     //   }
     // }
+    if (world_rank == 2) {
+      for (int i = 0; i < out_edges.size(); ++i) {
+        printf("edge %d: %d -> %d\n", i, out_edges[i].src, out_edges[i].dest);
+      }
+    }
 
     v_in_edges.resize(vertices_per_process);
     for (int i = 0; i < in_edges.size(); ++i) {
