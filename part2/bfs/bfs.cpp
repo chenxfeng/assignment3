@@ -170,10 +170,10 @@ void bfs(DistGraph &g, int *depths) {
     for (int i = 0; i < g.vertices_per_process; ++i) {
       if (depths[i] == NOT_VISITED_MARKER) {
         cover_local = 0;
-        g.bfs_end = true;
         break;
       }
     }
+    g.bfs_end = cover_local == 1;
     printf("iteration m1 from process %d: %d\n", g.world_rank, cover_local);
 
     int cover_all = 0;
