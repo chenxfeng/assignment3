@@ -47,7 +47,6 @@ void global_frontier_sync(DistGraph &g, DistFrontier &frontier, int *depths) {
         for (int j = 0; j < frontier.sizes[i]; ++j) {
           send_buf[2*j] = frontier.elements[i][j];
           send_buf[2*j+1] = frontier.depths[i][j];
-          assert(2*j+1 < msglen);
         }
       }
       MPI_Isend(send_buf, msglen, MPI_INT,
@@ -182,11 +181,11 @@ void bfs(DistGraph &g, int *depths) {
     // for (int i = 0; i < g.vertices_per_process; ++i) {
     //   printf("vertex %d: depth %d\n", i+g.vertices_per_process*g.world_rank, depths[i]);
     // }
-    printf("iteration m1 from process %d: local %d\n", g.world_rank, cover_local);
+    // printf("iteration m1 from process %d: local %d\n", g.world_rank, cover_local);
 
     int cover_all = 0;
     MPI_Allreduce(&cover_local, &cover_all, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
-    printf("iteration m2 from process %d: gobal %d\n", g.world_rank, cover_all);
+    // printf("iteration m2 from process %d: gobal %d\n", g.world_rank, cover_all);
     if (cover_all == g.world_size)
       break;
     // exchange frontier information
@@ -201,7 +200,7 @@ void bfs(DistGraph &g, int *depths) {
     next_front = temp;
     next_front -> clear();
 
-    printf("iteration end from process %d\n", g.world_rank);
+    // printf("iteration end from process %d\n", g.world_rank);
   }
   printf("vfs finish %d\n", g.world_rank);
 }
