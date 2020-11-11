@@ -118,6 +118,7 @@ void bfs_step(DistGraph &g, int *depths,
   // implement a step of the BFS
   for (int i = 0; i < frontier_size; ++i) {
     Vertex node = local_frontier[i];
+    printf("vertex %d depth %d in local_frontier\n", node, depths[node - g.start_vertex]);
     ///loop ver node's all outgoing neighbor
     for (size_t neighbor = 0; neighbor < g.v_out_edges[node - g.start_vertex].size(); ++neighbor) {
       int outgoing = g.v_out_edges[node - g.start_vertex][neighbor];
@@ -174,16 +175,16 @@ void bfs(DistGraph &g, int *depths) {
         break;
       }
     }
-    for (int i = 0; i < g.vertices_per_process; ++i) {
-      printf("vertex %d: depth %d\n", i+g.vertices_per_process*g.world_rank, depths[i]);
-    }
+    // for (int i = 0; i < g.vertices_per_process; ++i) {
+    //   printf("vertex %d: depth %d\n", i+g.vertices_per_process*g.world_rank, depths[i]);
+    // }
     // printf("iteration m1 from process %d: local %d\n", g.world_rank, cover_local);
 
     int cover_all = 0;
     MPI_Allreduce(&cover_local, &cover_all, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
     if (cover_all == g.vertices_per_process)
       break;
-    printf("iteration m2 from process %d: gobal %d\n", g.world_rank, cover_all);
+    // printf("iteration m2 from process %d: gobal %d\n", g.world_rank, cover_all);
     // exchange frontier information
     global_frontier_sync(g, *next_front, depths);
 
