@@ -74,30 +74,32 @@ int main(int argc, char** argv) {
 
     // Running in silent mode, for grading
     if (argc > 4) {
-      DistGraphRef graph_ref(vertices_per_node,
-                             max_edges_per_vertex,
-                             type,
-                             world_size,
-                             world_rank);
+      // DistGraphRef graph_ref(vertices_per_node,
+      //                        max_edges_per_vertex,
+      //                        type,
+      //                        world_size,
+      //                        world_rank);
 
-      graph_ref.change_graph_representation();
+      // graph_ref.change_graph_representation();
 
-      int *ref_depths = new int[graph_ref.vertices_per_process];
-      int *sol_depths = new int[graph_ref.vertices_per_process];
+      // int *ref_depths = new int[graph_ref.vertices_per_process];
+      // int *sol_depths = new int[graph_ref.vertices_per_process];
+      int *ref_depths = new int[vertices_per_node];
+      int *sol_depths = new int[vertices_per_node];
 
       double best_time_ref = std::numeric_limits<double>::max();
       double best_time_sol = std::numeric_limits<double>::max();
       bool failed = false;
 
       for (int i = 0; i < NUM_RUNS; ++i) {
-        memset(ref_depths, 0, graph_ref.vertices_per_process * sizeof(int));
+        // memset(ref_depths, 0, graph_ref.vertices_per_process * sizeof(int));
         
         // Ref timing
         MPI_Barrier(MPI_COMM_WORLD);
         double start_time_ref = MPI_Wtime();
         MPI_Barrier(MPI_COMM_WORLD);
 
-        bfs_ref(graph_ref, ref_depths);
+        // bfs_ref(graph_ref, ref_depths);
 
         MPI_Barrier(MPI_COMM_WORLD);
         double end_time_ref = MPI_Wtime();
@@ -136,40 +138,40 @@ int main(int argc, char** argv) {
       // Verify correctness
       int mismatch = is_same(ref_depths, sol_depths, graph.vertices_per_process);
 
-      if (world_rank == MASTER) {
-        if (mismatch != graph.vertices_per_process) {
-          failed = true;
-          int mismatch_vertex = (MASTER * graph.vertices_per_process) + mismatch;
-          int mismatch_val = sol_depths[mismatch_vertex];
-          int expected_val = ref_depths[mismatch_vertex];
-          std::cerr << "Mismatch at vertex " << mismatch_vertex << ": Got " << mismatch_val << ", expected " <<
-              expected_val << "\n";
-        }
-      }
+      // if (world_rank == MASTER) {
+      //   if (mismatch != graph.vertices_per_process) {
+      //     failed = true;
+      //     int mismatch_vertex = (MASTER * graph.vertices_per_process) + mismatch;
+      //     int mismatch_val = sol_depths[mismatch_vertex];
+      //     int expected_val = ref_depths[mismatch_vertex];
+      //     std::cerr << "Mismatch at vertex " << mismatch_vertex << ": Got " << mismatch_val << ", expected " <<
+      //         expected_val << "\n";
+      //   }
+      // }
 
       MPI_Barrier(MPI_COMM_WORLD);
-      if (world_rank == MASTER) {
-        for (int j = 1; j < world_size; j++) {
-          int mismatch_j, mismatch_val, expected_val;
-          MPI_Status status;
-          MPI_Recv(&mismatch_j, 1, MPI_INT, j, 0, MPI_COMM_WORLD, &status);
+      // if (world_rank == MASTER) {
+      //   for (int j = 1; j < world_size; j++) {
+      //     int mismatch_j, mismatch_val, expected_val;
+      //     MPI_Status status;
+      //     MPI_Recv(&mismatch_j, 1, MPI_INT, j, 0, MPI_COMM_WORLD, &status);
 
-          if (mismatch_j != graph.vertices_per_process) {
-            MPI_Recv(&mismatch_val, 1, MPI_INT, j, 0, MPI_COMM_WORLD, &status);
-            MPI_Recv(&expected_val, 1, MPI_INT, j, 0, MPI_COMM_WORLD, &status);
-            std::cerr << "Mismatch at vertex " << j * graph.vertices_per_process
-              + mismatch_j << ": Got " << mismatch_val << ", expected " <<
-              expected_val << "\n";
-            failed = true;
-          }
-        }
-      } else {
-        MPI_Send(&mismatch, 1, MPI_INT, MASTER, 0, MPI_COMM_WORLD);
-        if (mismatch != graph.vertices_per_process) {
-          MPI_Send(&sol_depths[mismatch], 1, MPI_INT, MASTER, 0, MPI_COMM_WORLD);
-          MPI_Send(&ref_depths[mismatch], 1, MPI_INT, MASTER, 0, MPI_COMM_WORLD);
-        }
-      }
+      //     if (mismatch_j != graph.vertices_per_process) {
+      //       MPI_Recv(&mismatch_val, 1, MPI_INT, j, 0, MPI_COMM_WORLD, &status);
+      //       MPI_Recv(&expected_val, 1, MPI_INT, j, 0, MPI_COMM_WORLD, &status);
+      //       std::cerr << "Mismatch at vertex " << j * graph.vertices_per_process
+      //         + mismatch_j << ": Got " << mismatch_val << ", expected " <<
+      //         expected_val << "\n";
+      //       failed = true;
+      //     }
+      //   }
+      // } else {
+      //   MPI_Send(&mismatch, 1, MPI_INT, MASTER, 0, MPI_COMM_WORLD);
+      //   if (mismatch != graph.vertices_per_process) {
+      //     MPI_Send(&sol_depths[mismatch], 1, MPI_INT, MASTER, 0, MPI_COMM_WORLD);
+      //     MPI_Send(&ref_depths[mismatch], 1, MPI_INT, MASTER, 0, MPI_COMM_WORLD);
+      //   }
+      // }
 
       int failed_false;
       if (world_rank == MASTER) {
@@ -230,35 +232,35 @@ int main(int argc, char** argv) {
 
       delete sol_depths;
 
-      DistGraphRef graph(vertices_per_node,
-                      max_edges_per_vertex,
-                      type,
-                      world_size,
-                      world_rank);
+      // DistGraphRef graph(vertices_per_node,
+      //                 max_edges_per_vertex,
+      //                 type,
+      //                 world_size,
+      //                 world_rank);
 
-      graph.change_graph_representation();
+      // graph.change_graph_representation();
 
-      // Compare against sequential single-node BFS solution
-      int total_vertices = graph.vertices_per_process * world_size;
-      int *ref_sol;
-      if (world_rank == MASTER)
-        ref_sol = new int[total_vertices];
-      else
-        ref_sol = new int[graph.vertices_per_process];
+      // // Compare against sequential single-node BFS solution
+      // int total_vertices = graph.vertices_per_process * world_size;
+      // int *ref_sol;
+      // if (world_rank == MASTER)
+      //   ref_sol = new int[total_vertices];
+      // else
+      //   ref_sol = new int[graph.vertices_per_process];
 
-      // Aggregate distributed solutions into ref_sol
-      bfs_ref(graph, ref_sol);
-      if (world_rank == MASTER) {
-        for (int i = 1; i < world_size; i++) {
-          MPI_Status status;
-          MPI_Recv(ref_sol + i * graph.vertices_per_process,
-                   graph.vertices_per_process, MPI_INT, i, 0, MPI_COMM_WORLD,
-                   &status);
-        }
-      } else {
-        MPI_Send(ref_sol, graph.vertices_per_process, MPI_INT, MASTER, 0,
-                 MPI_COMM_WORLD);
-      }
+      // // Aggregate distributed solutions into ref_sol
+      // bfs_ref(graph, ref_sol);
+      // if (world_rank == MASTER) {
+      //   for (int i = 1; i < world_size; i++) {
+      //     MPI_Status status;
+      //     MPI_Recv(ref_sol + i * graph.vertices_per_process,
+      //              graph.vertices_per_process, MPI_INT, i, 0, MPI_COMM_WORLD,
+      //              &status);
+      //   }
+      // } else {
+      //   MPI_Send(ref_sol, graph.vertices_per_process, MPI_INT, MASTER, 0,
+      //            MPI_COMM_WORLD);
+      // }
     }
 
     // Finalize the MPI environment.
