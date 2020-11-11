@@ -18,7 +18,6 @@
  */
 void global_frontier_sync(DistGraph &g, DistFrontier &frontier, int *depths) {
 
-
   // TODO 15-418/618 STUDENTS
   //
   // In this function, you should synchronize between all nodes you
@@ -48,6 +47,7 @@ void global_frontier_sync(DistGraph &g, DistFrontier &frontier, int *depths) {
         for (int j = 0; j < frontier.sizes[i]; ++j) {
           send_buf[2*j] = frontier.elements[i][j];
           send_buf[2*j+1] = frontier.depths[i][j];
+          assert(2*j+1 < msglen);
         }
       }
       MPI_Isend(send_buf, msglen, MPI_INT,
@@ -179,9 +179,9 @@ void bfs(DistGraph &g, int *depths) {
         break;
       }
     }
-    for (int i = 0; i < g.vertices_per_process; ++i) {
-      printf("vertex %d: depth %d\n", i+g.vertices_per_process*g.world_rank, depths[i]);
-    }
+    // for (int i = 0; i < g.vertices_per_process; ++i) {
+    //   printf("vertex %d: depth %d\n", i+g.vertices_per_process*g.world_rank, depths[i]);
+    // }
     printf("iteration m1 from process %d: local %d\n", g.world_rank, cover_local);
 
     int cover_all = 0;
