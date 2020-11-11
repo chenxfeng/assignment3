@@ -220,4 +220,5 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
             delete(probe_status);
         }
     }
+    if (g.world_rank == 0) printf("finish pageRank\n");
 }
