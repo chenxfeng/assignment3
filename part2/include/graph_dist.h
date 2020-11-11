@@ -71,8 +71,6 @@ public:
     std::set<int> send_process_ids;
     ///data structure: recv message from process with src vertex of incoming edge
     std::set<int> recv_process_ids;
-
-    bool bfs_end = false;
 };
 
 // generates a distributed graph of the given graph type (uniform,
