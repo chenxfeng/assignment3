@@ -372,11 +372,11 @@ void DistGraph::setup() {
     // to setup its data structures, precompute anythign about the
     // topology, or put the graph in the desired form for future computation.
     printf("hello from %d\n", world_rank);
-    // if (world_rank == 0) {
-    //   for (int i = 0; i < in_edges.size(); ++i) {
-    //     printf("edge %d: %d -> %d\n", i, in_edges[i].src, in_edges[i].dest);
-    //   }
-    // }
+    if (world_rank == 11) {
+      for (int i = 0; i < in_edges.size(); ++i) {
+        printf("edge %d: %d -> %d\n", i, in_edges[i].src, in_edges[i].dest);
+      }
+    }
     // if (world_rank == 2) {
     //   for (int i = 0; i < out_edges.size(); ++i) {
     //     printf("edge %d: %d -> %d\n", i, out_edges[i].src, out_edges[i].dest);
