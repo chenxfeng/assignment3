@@ -384,7 +384,7 @@ void DistGraph::setup() {
     // }
 
     v_in_edges.resize(vertices_per_process);
-    for (int i = 0; i < in_edges.size(); ++i) {
+    for (size_t i = 0; i < in_edges.size(); ++i) {
         v_in_edges[in_edges[i].dest - start_vertex].push_back(in_edges[i].src);
         ///collect all src vertex of incomming edge
         if (v_to_out_degree.count(in_edges[i].src) == 0)
@@ -395,7 +395,7 @@ void DistGraph::setup() {
             recv_process_ids.insert(get_vertex_owner_rank(in_edges[i].src));
     }
     v_out_edges.resize(vertices_per_process);
-    for (int i = 0; i < out_edges.size(); ++i) {
+    for (size_t i = 0; i < out_edges.size(); ++i) {
         v_out_edges[out_edges[i].src - start_vertex].push_back(out_edges[i].dest);
         ///send message to process with dest vertex
         if (send_process_ids.count(get_vertex_owner_rank(out_edges[i].dest)) == 0
@@ -442,7 +442,7 @@ void DistGraph::setup() {
             send_bufs.push_back(send_buf);
             send_idx.push_back(i);
 
-            for (size_t j = start_vertex; j <= end_vertex; ++j) {
+            for (int j = start_vertex; j <= end_vertex; ++j) {
                 send_buf[j - start_vertex] = v_out_edges[j - start_vertex].size();
             }
 
@@ -491,7 +491,7 @@ void DistGraph::setup() {
     //             it->first, it->second);
     //     }
     // }
-    for (int i = 0; i < v_no_out_edge.size(); ++i) {
+    for (size_t i = 0; i < v_no_out_edge.size(); ++i) {
         ///recv message from process with vertex without outgoing edge
         if (recv_process_ids.count(get_vertex_owner_rank(v_no_out_edge[i])) == 0
             && get_vertex_owner_rank(v_no_out_edge[i]) != world_rank)

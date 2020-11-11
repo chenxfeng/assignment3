@@ -59,7 +59,8 @@ DistFrontier::DistFrontier(int _max_vertices_per_node, int _world_size,
 inline
 DistFrontier::~DistFrontier() {
   if (elements) {
-    for (int i = 0; i < world_rank; ++i) {
+    // for (int i = 0; i < world_rank; ++i) {//default code is wrong
+    for (int i = 0; i < world_size; ++i) {
       if ( elements[i] ) delete elements[i];
       if ( depths[i] ) delete depths[i];
     }
