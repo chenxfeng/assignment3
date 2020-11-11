@@ -187,6 +187,10 @@ void bfs(DistGraph &g, int *depths) {
     // exchange frontier information
     global_frontier_sync(g, *next_front, depths);
 
+    for (int i = 0; i < g.vertices_per_process; ++i) {
+      printf("after sync vertex %d: depth %d\n", i+g.vertices_per_process*g.world_rank, depths[i]);
+    }
+
     DistFrontier *temp = cur_front;
     cur_front = next_front;
     next_front = temp;

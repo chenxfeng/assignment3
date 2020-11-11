@@ -419,12 +419,12 @@ void DistGraph::setup() {
     if (world_rank == 0) {
         for (int i = start_vertex; i <= end_vertex; ++i) {
             for (int j = 0; j < v_in_edges[i].size(); ++j) {
-                printf("vertex %d incoming edge from %d\n", i, v_in_edges[i][j]);
+                printf("vertex %d incoming edge from %d\n", i, v_in_edges[i-start_vertex][j]);
             }
         }
         for (int i = start_vertex; i <= end_vertex; ++i) {
             for (int j = 0; j < v_out_edges[i].size(); ++j) {
-                printf("vertex %d outgoing edge to %d\n", i, v_out_edges[i][j]);
+                printf("vertex %d outgoing edge to %d\n", i, v_out_edges[i-start_vertex][j]);
             }
         }
     }
