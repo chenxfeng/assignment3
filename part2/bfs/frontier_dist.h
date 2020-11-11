@@ -79,6 +79,7 @@ void DistFrontier::clear() {
 
 inline
 void DistFrontier::add(int owner_rank, Vertex v, int depth) {
+  assert(sizes[owner_rank] < max_vertices_per_node);
   elements[owner_rank][sizes[owner_rank]] = v;
   depths[owner_rank][sizes[owner_rank]++] = depth;
 }
