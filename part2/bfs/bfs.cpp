@@ -39,13 +39,13 @@ void global_frontier_sync(DistGraph &g, DistFrontier &frontier, int *depths) {
   ///broadcast part next_frontier to every other processes
   for (int i = 0; i < world_size; i++) {
     if (i != world_rank) {
-      int msglen = frontier.size[i] == 0 ? 1 : frontier.size[i]*2
+      int msglen = frontier.sizes[i] == 0 ? 1 : frontier.sizes[i]*2
       int* send_buf = new int[msglen];
       send_bufs.push_back(send_buf);
       send_idx.push_back(i);
       ///fill if no empty
       if (msglen != 1) {
-        for (int j = 0; j < frontier.size[i]; ++j) {
+        for (int j = 0; j < frontier.sizes[i]; ++j) {
           send_buf[2*j] = frontier.elements[i][j];
           send_buf[2*j+1] = frontier.depths[i][j];
         }
@@ -72,7 +72,7 @@ void global_frontier_sync(DistGraph &g, DistFrontier &frontier, int *depths) {
           ///check whether visited
           int node = recv_buf[2*j];
           if (depths[node - g.start_vertex] == NOT_VISITED_MARKER) {
-            next_frontier.add(g.get_vertex_owner_rank(node), node, recv_buf[2*j+1]);
+            frontier.add(g.get_vertex_owner_rank(node), node, recv_buf[2*j+1]);
           }
         }
       }
