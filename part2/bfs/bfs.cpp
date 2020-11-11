@@ -178,11 +178,9 @@ void bfs(DistGraph &g, int *depths) {
         break;
       }
     }
-    if (cover_local == 0) {
-      for (int i = 0; i < g.vertices_per_process; ++i) {
-        printf("vertex %d: depth %d\n", i+g.vertices_per_process*g.world_rank, depths[i]);
-      }
-    }
+    // for (int i = 0; i < g.vertices_per_process; ++i) {
+    //   printf("vertex %d: depth %d\n", i+g.vertices_per_process*g.world_rank, depths[i]);
+    // }
     // printf("iteration m1 from process %d: local %d\n", g.world_rank, cover_local);
 
     int cover_all = 0;
@@ -203,7 +201,7 @@ void bfs(DistGraph &g, int *depths) {
     next_front = temp;
     next_front -> clear();
 
-    printf("iteration end from process %d\n", g.world_rank);
+    // printf("iteration end from process %d\n", g.world_rank);
   }
   if (g.world_rank == 0) printf("vfs finish %d\n", g.world_rank);
 }
