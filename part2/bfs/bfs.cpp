@@ -166,7 +166,7 @@ void bfs(DistGraph &g, int *depths) {
     // You will need to implement is_empty() in ../dist_graph.h
     // if (next_front->is_empty())
     //   break;
-    int cover_local = 1, cover_all = 1;
+    int cover_local = 1;
     for (int i = 0; i < g.vertices_per_process; ++i) {
       if (depths[i] == NOT_VISITED_MARKER) {
         cover_local = 0;
@@ -175,6 +175,7 @@ void bfs(DistGraph &g, int *depths) {
     }
     printf("iteration m1 from process %d: %d\n", g.world_rank, cover_local);
 
+    int cover_all = 0;
     MPI_Allreduce(&cover_local, &cover_all, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
     if (cover_all == g.vertices_per_process)
       break;
