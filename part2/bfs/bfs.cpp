@@ -175,8 +175,8 @@ void bfs(DistGraph &g, int *depths) {
     }
     printf("iteration m1 from process %d: %d\n", g.world_rank, cover_local);
 
-    MPI_Allreduce(&cover_local, &cover_all, 1, MPI_INT, MPI_LAND, MPI_COMM_WORLD);
-    if (cover_all == 1)
+    MPI_Allreduce(&cover_local, &cover_all, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    if (cover_all == g.vertices_per_process)
       break;
     printf("iteration m2 from process %d: %d\n", g.world_rank, cover_all);
     // exchange frontier information
