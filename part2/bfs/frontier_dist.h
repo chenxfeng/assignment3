@@ -92,7 +92,7 @@ void DistFrontier::add(int owner_rank, Vertex v, int depth) {
   // elements[owner_rank][sizes[owner_rank]] = v;
   // depths[owner_rank][sizes[owner_rank]++] = depth;
   elements[owner_rank].push_back(v);
-  depths[owner_rank].push_basck(depth);
+  depths[owner_rank].push_back(depth);
   sizes[owner_rank]++;
 }
 
