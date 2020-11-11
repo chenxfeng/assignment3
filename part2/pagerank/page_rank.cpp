@@ -145,7 +145,8 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
     ///``mpiexec -n 2 ./pr_dist clustered 50 20 silent`` normal
     /// ``mpiexec -n 10 ./pr_dist clustered 50 20 silent``would block in second MPI_Allreduce
     while (!converged) {
-// if (g.world_rank == 0) printf("iteration begin\n");
+        // if (g.world_rank == 0) printf("iteration begin\n");
+        
         double local_diff = 0;///need mpi_all_reduce
 #pragma omp parallel for
 // #pragma omp parallel for num_threads(thread_count) schedule(static, 1)
@@ -166,14 +167,16 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
 // #pragma omp critical ///does it matter if reading an old value?
             score_curr[vi] = score_next[vi - g.start_vertex];
         }
-// if (g.world_rank == 0) 
-//     printf("local_diff: %f\n", local_diff);
+
+        // if (g.world_rank == 0) 
+        //     printf("local_diff: %f\n", local_diff);
         ///all reduce the local_diff value to global_diff
         double global_diff;
         MPI_Allreduce(&local_diff, &global_diff, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
         converged = global_diff < convergence;
-// if (g.world_rank == 0) 
-//     printf("global_diff: %f, local_diff: %f, %f\n", global_diff, local_diff, convergence);
+        // if (g.world_rank == 0) 
+        //     printf("global_diff: %f, local_diff: %f, %f\n", global_diff, local_diff, convergence);
+
         ///communicate for result of this iteration
         if (!converged) {
             double * send_buf = score_next.data();
@@ -182,7 +185,7 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
             MPI_Request* send_reqs = new MPI_Request[g.world_size];
             for (int i = 0; i < g.world_size; ++i) {
                 if (g.send_process_ids.count(i)) {
-                    if (g.world_rank == 0) printf("send %d\n", i);
+                    // if (g.world_rank == 0) printf("send %d\n", i);
                     MPI_Isend(send_buf, vertices_per_process, MPI_DOUBLE, 
                         i, 0, MPI_COMM_WORLD, &send_reqs[i]);
                 }
@@ -191,7 +194,7 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
             MPI_Status* probe_status = new MPI_Status[g.world_size];
             for (int i = 0; i < g.world_size; ++i) {
                 if (g.recv_process_ids.count(i)) {
-                    if (g.world_rank == 0) printf("recv %d\n", i);
+                    // if (g.world_rank == 0) printf("recv %d\n", i);
                     ///probe and wait for message from process i
                     MPI_Status status;
                     MPI_Probe(i, 0, MPI_COMM_WORLD, &probe_status[i]);
