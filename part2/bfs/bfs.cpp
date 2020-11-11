@@ -73,6 +73,7 @@ void global_frontier_sync(DistGraph &g, DistFrontier &frontier, int *depths) {
           int node = recv_buf[2*j];
           if (depths[node - g.start_vertex] == NOT_VISITED_MARKER) {
             frontier.add(g.get_vertex_owner_rank(node), node, recv_buf[2*j+1]);
+            depths[node - g.start_vertex] = recv_buf[2*j+1];
           }
         }
       }
