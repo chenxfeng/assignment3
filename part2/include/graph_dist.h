@@ -65,12 +65,15 @@ public:
     std::map<int, int> v_to_out_degree;
     ///data structure: outgoing edges of every local vertex
     std::vector<std::vector<int> > v_out_edges;//the size of inner vector is out-degree
-    ///data structure: local vertex with no outgoing edge
+    ///data structure: local vertex without outgoing edge
     std::vector<int> v_no_out_edge;
     ///data structure: send message to process with dst vertex of outgoing edge
     std::set<int> send_process_ids;
     ///data structure: recv message from process with src vertex of incoming edge
     std::set<int> recv_process_ids;
+
+    ///data structure: local vertex without incoming edge
+    std::set<int> v_no_in_edge;
 };
 
 // generates a distributed graph of the given graph type (uniform,
@@ -372,11 +375,11 @@ void DistGraph::setup() {
     // to setup its data structures, precompute anythign about the
     // topology, or put the graph in the desired form for future computation.
     printf("hello from %d\n", world_rank);
-    if (world_rank == 11) {
-      for (int i = 0; i < in_edges.size(); ++i) {
-        printf("edge %d: %d -> %d\n", i, in_edges[i].src, in_edges[i].dest);
-      }
-    }
+    // if (world_rank == 0) {
+    //   for (int i = 0; i < in_edges.size(); ++i) {
+    //     printf("edge %d: %d -> %d\n", i, in_edges[i].src, in_edges[i].dest);
+    //   }
+    // }
     // if (world_rank == 2) {
     //   for (int i = 0; i < out_edges.size(); ++i) {
     //     printf("edge %d: %d -> %d\n", i, out_edges[i].src, out_edges[i].dest);
@@ -403,6 +406,9 @@ void DistGraph::setup() {
             send_process_ids.insert(get_vertex_owner_rank(out_edges[i].dest));
     }
     for (int i = start_vertex; i <= end_vertex; ++i) {
+        if (v_in_edges[i].empty()) {
+            v_no_in_edge.insert(i);
+        }
         if (v_out_edges[i].empty()) {
             v_no_out_edge.push_back(i);
         }
