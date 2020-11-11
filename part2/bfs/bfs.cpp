@@ -39,7 +39,7 @@ void global_frontier_sync(DistGraph &g, DistFrontier &frontier, int *depths) {
   ///broadcast part next_frontier to every other processes
   for (int i = 0; i < world_size; i++) {
     if (i != world_rank) {
-      int msglen = (g.bfs_end || frontier.sizes[i] == 0) ? 1 : frontier.sizes[i]*2;
+      int msglen = frontier.sizes[i] == 0 ? 1 : frontier.sizes[i]*2;
       int* send_buf = new int[msglen];
       send_bufs.push_back(send_buf);
       send_idx.push_back(i);
@@ -72,7 +72,7 @@ void global_frontier_sync(DistGraph &g, DistFrontier &frontier, int *depths) {
           ///check whether visited
           int node = recv_buf[2*j];
           if (depths[node - g.start_vertex] == NOT_VISITED_MARKER) {
-            frontier.add(g.get_vertex_owner_rank(node), node, recv_buf[2*j+1]);
+            frontier.add(world_rank, node, recv_buf[2*j+1]);
             depths[node - g.start_vertex] = recv_buf[2*j+1];
           }
         }
@@ -174,14 +174,13 @@ void bfs(DistGraph &g, int *depths) {
         break;
       }
     }
-    g.bfs_end = cover_local == 1;
-    printf("iteration m1 from process %d: %d\n", g.world_rank, cover_local);
+    printf("iteration m1 from process %d: local %d\n", g.world_rank, cover_local);
 
     int cover_all = 0;
     MPI_Allreduce(&cover_local, &cover_all, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
     if (cover_all == g.vertices_per_process)
       break;
-    printf("iteration m2 from process %d: %d\n", g.world_rank, cover_all);
+    printf("iteration m2 from process %d: gobal %d\n", g.world_rank, cover_all);
     // exchange frontier information
     global_frontier_sync(g, *next_front, depths);
 
