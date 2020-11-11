@@ -377,11 +377,11 @@ void DistGraph::setup() {
     //     printf("edge %d: %d -> %d\n", i, in_edges[i].src, in_edges[i].dest);
     //   }
     // }
-    if (world_rank == 2) {
-      for (int i = 0; i < out_edges.size(); ++i) {
-        printf("edge %d: %d -> %d\n", i, out_edges[i].src, out_edges[i].dest);
-      }
-    }
+    // if (world_rank == 2) {
+    //   for (int i = 0; i < out_edges.size(); ++i) {
+    //     printf("edge %d: %d -> %d\n", i, out_edges[i].src, out_edges[i].dest);
+    //   }
+    // }
 
     v_in_edges.resize(vertices_per_process);
     for (int i = 0; i < in_edges.size(); ++i) {
@@ -411,8 +411,9 @@ void DistGraph::setup() {
     }
     if (v_no_out_edge.size()) { ///send message to all process
         send_process_ids.clear();
-        for (int i = 0; i < world_size && i != world_rank; ++i) {
-            send_process_ids.insert(i);
+        for (int i = 0; i < world_size; ++i) {
+            if (i != world_rank) 
+                send_process_ids.insert(i);
         }
     }
     // if (world_rank == 0) {
