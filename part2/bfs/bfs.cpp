@@ -159,7 +159,7 @@ void bfs(DistGraph &g, int *depths) {
   }
 
   while (true) {
-    printf("iteration begin from process %d\n", g.world_rank);
+    // printf("iteration begin from process %d\n", g.world_rank);
 
     bfs_step(g, depths, *cur_front, *next_front);
 
@@ -174,7 +174,10 @@ void bfs(DistGraph &g, int *depths) {
         break;
       }
     }
-    printf("iteration m1 from process %d: local %d\n", g.world_rank, cover_local);
+    for (int i = 0; i < g.vertices_per_process; ++i) {
+      printf("vertex %d: depth %d\n", i+g.vertices_per_process*world_rank, depths[i])
+    }
+    // printf("iteration m1 from process %d: local %d\n", g.world_rank, cover_local);
 
     int cover_all = 0;
     MPI_Allreduce(&cover_local, &cover_all, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
