@@ -372,11 +372,11 @@ void DistGraph::setup() {
     // to setup its data structures, precompute anythign about the
     // topology, or put the graph in the desired form for future computation.
     printf("hello from %d\n", world_rank);
-    if (world_rank == 0) {
-      for (int i = 0; i < in_edges.size(); ++i) {
-        printf("edge %d: %d -> %d\n", i, in_edges[i].src, in_edges[i].dest);
-      }
-    }
+    // if (world_rank == 0) {
+    //   for (int i = 0; i < in_edges.size(); ++i) {
+    //     printf("edge %d: %d -> %d\n", i, in_edges[i].src, in_edges[i].dest);
+    //   }
+    // }
     // if (world_rank == 2) {
     //   for (int i = 0; i < out_edges.size(); ++i) {
     //     printf("edge %d: %d -> %d\n", i, out_edges[i].src, out_edges[i].dest);
@@ -416,18 +416,18 @@ void DistGraph::setup() {
                 send_process_ids.insert(i);
         }
     }
-    // if (world_rank == 0) {
-    //     for (int i = start_vertex; i <= end_vertex; ++i) {
-    //         for (int j = 0; j < v_in_edges[i].size(); ++j) {
-    //             printf("vertex %d incoming edge from %d\n", i, v_in_edges[i][j]);
-    //         }
-    //     }
-    //     for (int i = start_vertex; i <= end_vertex; ++i) {
-    //         for (int j = 0; j < v_out_edges[i].size(); ++j) {
-    //             printf("vertex %d outgoing edge to %d\n", i, v_out_edges[i][j]);
-    //         }
-    //     }
-    // }
+    if (world_rank == 0) {
+        for (int i = start_vertex; i <= end_vertex; ++i) {
+            for (int j = 0; j < v_in_edges[i].size(); ++j) {
+                printf("vertex %d incoming edge from %d\n", i, v_in_edges[i][j]);
+            }
+        }
+        for (int i = start_vertex; i <= end_vertex; ++i) {
+            for (int j = 0; j < v_out_edges[i].size(); ++j) {
+                printf("vertex %d outgoing edge to %d\n", i, v_out_edges[i][j]);
+            }
+        }
+    }
     ///broadcast the out-degree
     std::vector<int*> send_bufs;
     std::vector<int> send_idx;
