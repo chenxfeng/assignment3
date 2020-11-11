@@ -118,8 +118,8 @@ void bfs_step(DistGraph &g, int *depths,
   for (int i = 0; i < frontier_size; ++i) {
     Vertex node = local_frontier[i];
     ///loop ver node's all outgoing neighbor
-    for (size_t neighbor = 0; neighbor < g.v_out_edges[node].size(); ++neighbor) {
-      int outgoing = g.v_out_edges[node][neighbor];
+    for (size_t neighbor = 0; neighbor < g.v_out_edges[node - g.start_vertex].size(); ++neighbor) {
+      int outgoing = g.v_out_edges[node - g.start_vertex][neighbor];
       ///assume vertex not visited: add to next_frontier, check when sync
       next_frontier.add(g.get_vertex_owner_rank(outgoing), outgoing, depths[node - g.start_vertex]+1);
       if (g.get_vertex_owner_rank(outgoing) == g.world_rank)
