@@ -184,9 +184,10 @@ void bfs(DistGraph &g, int *depths) {
     printf("iteration m1 from process %d: local %d\n", g.world_rank, cover_local);
 
     int cover_all = 0;
-    MPI_Allreduce(&cover_local, &cover_all, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    // MPI_Allreduce(&cover_local, &cover_all, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(&cover_local, &cover_all, 1, MPI_INT, MPI_LAND, MPI_COMM_WORLD);
     printf("iteration m2 from process %d: gobal %d\n", g.world_rank, cover_all);
-    if (cover_all == g.world_size)
+    if (cover_all == 1)//g.world_size)
       break;
     // exchange frontier information
     global_frontier_sync(g, *next_front, depths);
