@@ -166,19 +166,19 @@ void bfs(DistGraph &g, int *depths) {
     // You will need to implement is_empty() in ../dist_graph.h
     // if (next_front->is_empty())
     //   break;
-    int cover_local = 1, cover_all;
+    int cover_local = 1, cover_all = 1;
     for (int i = 0; i < g.vertices_per_process; ++i) {
       if (depths[i] == NOT_VISITED_MARKER) {
         cover_local = 0;
         break;
       }
     }
-    printf("iteration m1 from process %d\n", g.world_rank);
+    printf("iteration m1 from process %d: %d\n", g.world_rank, cover_local);
 
     MPI_Allreduce(&cover_local, &cover_all, 1, MPI_INT, MPI_LAND, MPI_COMM_WORLD);
     if (cover_all == 1)
       break;
-    printf("iteration m2 from process %d\n", g.world_rank);
+    printf("iteration m2 from process %d: %d\n", g.world_rank, cover_all);
     // exchange frontier information
     global_frontier_sync(g, *next_front, depths);
 
