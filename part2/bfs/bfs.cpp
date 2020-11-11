@@ -173,12 +173,12 @@ void bfs(DistGraph &g, int *depths) {
         break;
       }
     }
-    if (g.world_rank == 0) printf("iteration m1\n");
+    printf("iteration m1\n");
 
     MPI_Allreduce(&cover_local, &cover_all, 1, MPI_INT, MPI_LAND, MPI_COMM_WORLD);
     if (cover_all == 1)
       break;
-    if (g.world_rank == 0) printf("iteration m2\n");
+    printf("iteration m2\n");
     // exchange frontier information
     global_frontier_sync(g, *next_front, depths);
 
