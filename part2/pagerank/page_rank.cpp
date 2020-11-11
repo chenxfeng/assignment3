@@ -143,7 +143,7 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
 //         }
 //     }
     ///``mpiexec -n 2~4 ./pr_dist clustered 50 20 silent`` normal
-    /// ``mpiexec -n 5~10+ ./pr_dist clustered 50 20 silent``would block in second MPI_Allreduce
+    /// ``mpiexec -n 5~10+ ./pr_dist clustered 50 20 silent`` some process block
     while (!converged) {
         printf("iteration begin in process %d\n", g.world_rank);
         
@@ -219,6 +219,7 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
             delete(send_reqs);
             delete(probe_status);
         }
+        printf("iteration end in process %d\n", g.world_rank);
     }
     if (g.world_rank == 0) printf("finish pageRank\n");
 }
