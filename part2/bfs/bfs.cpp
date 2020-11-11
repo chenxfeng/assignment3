@@ -158,7 +158,7 @@ void bfs(DistGraph &g, int *depths) {
   }
 
   while (true) {
-    if (g.world_rank == 0) printf("iteration begin\n");
+    printf("iteration begin from process %d\n", g.world_rank);
 
     bfs_step(g, depths, *cur_front, *next_front);
 
@@ -187,7 +187,7 @@ void bfs(DistGraph &g, int *depths) {
     next_front = temp;
     next_front -> clear();
 
-    if (g.world_rank == 0) printf("iteration end\n");
+    printf("iteration end from process %d\n", g.world_rank);
   }
 }
 
