@@ -186,9 +186,9 @@ void bfs(DistGraph &g, int *depths) {
 
     int cover_all = 0;
     MPI_Allreduce(&cover_local, &cover_all, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    printf("iteration m2 from process %d: gobal %d\n", g.world_rank, cover_all);
     if (cover_all == g.world_size)
       break;
-    printf("iteration m2 from process %d: gobal %d\n", g.world_rank, cover_all);
     // exchange frontier information
     global_frontier_sync(g, *next_front, depths);
 
@@ -203,5 +203,6 @@ void bfs(DistGraph &g, int *depths) {
 
     printf("iteration end from process %d\n", g.world_rank);
   }
+  printf("vfs finish %d\n", g.world_rank);
 }
 
