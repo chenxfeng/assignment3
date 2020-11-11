@@ -145,7 +145,7 @@ void pageRank(DistGraph &g, double* solution, double damping, double convergence
     ///``mpiexec -n 2~4 ./pr_dist clustered 50 20 silent`` normal
     /// ``mpiexec -n 5~10+ ./pr_dist clustered 50 20 silent``would block in second MPI_Allreduce
     while (!converged) {
-        // if (g.world_rank == 0) printf("iteration begin\n");
+        printf("iteration begin in process %d\n", g.world_rank);
         
         double local_diff = 0;///need mpi_all_reduce
 #pragma omp parallel for
