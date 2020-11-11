@@ -416,18 +416,18 @@ void DistGraph::setup() {
                 send_process_ids.insert(i);
         }
     }
-    if (world_rank == 0) {
-        for (int i = start_vertex; i <= end_vertex; ++i) {
-            for (int j = 0; j < v_in_edges[i].size(); ++j) {
-                printf("vertex %d incoming edge from %d\n", i, v_in_edges[i-start_vertex][j]);
-            }
-        }
-        for (int i = start_vertex; i <= end_vertex; ++i) {
-            for (int j = 0; j < v_out_edges[i].size(); ++j) {
-                printf("vertex %d outgoing edge to %d\n", i, v_out_edges[i-start_vertex][j]);
-            }
-        }
-    }
+    // if (world_rank == 0) {
+    //     for (int i = start_vertex; i <= end_vertex; ++i) {
+    //         for (int j = 0; j < v_in_edges[i].size(); ++j) {
+    //             printf("vertex %d incoming edge from %d\n", i, v_in_edges[i-start_vertex][j]);
+    //         }
+    //     }
+    //     for (int i = start_vertex; i <= end_vertex; ++i) {
+    //         for (int j = 0; j < v_out_edges[i].size(); ++j) {
+    //             printf("vertex %d outgoing edge to %d\n", i, v_out_edges[i-start_vertex][j]);
+    //         }
+    //     }
+    // }
     ///broadcast the out-degree
     std::vector<int*> send_bufs;
     std::vector<int> send_idx;
