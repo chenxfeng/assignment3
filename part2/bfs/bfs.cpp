@@ -39,7 +39,7 @@ void global_frontier_sync(DistGraph &g, DistFrontier &frontier, int *depths) {
   ///broadcast part next_frontier to every other processes
   for (int i = 0; i < world_size; i++) {
     if (i != world_rank) {
-      int msglen = frontier.sizes[i] == 0 ? 1 : frontier.sizes[i]*2
+      int msglen = frontier.sizes[i] == 0 ? 1 : frontier.sizes[i]*2;
       int* send_buf = new int[msglen];
       send_bufs.push_back(send_buf);
       send_idx.push_back(i);
