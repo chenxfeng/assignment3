@@ -1,4 +1,5 @@
 #include <cstring>
+#include <vector>
 
 using Vertex = int;
 
@@ -20,9 +21,11 @@ class DistFrontier {
     //
     // For example: elements[2] constains all the frontier vertices that are owned 
     // by process 2
-    Vertex **elements;
-    int **depths;
+    // Vertex **elements;
+    // int **depths;
     int *sizes;
+    std::vector<std::vector<Vertex> > elements;
+    std::vector<std::vector<int> > depths;
 
     int world_size;
     int world_rank;
@@ -46,42 +49,51 @@ DistFrontier::DistFrontier(int _max_vertices_per_node, int _world_size,
           world_size(_world_size),
           world_rank(_world_rank)
 {
-  elements = new Vertex*[world_size];
-  depths = new int*[world_size];
+  // elements = new Vertex*[world_size];
+  // depths = new int*[world_size];
+  // for (int i = 0; i < world_size; ++i) {
+  //   elements[i] = new Vertex[max_vertices_per_node];
+  //   depths[i] = new int[max_vertices_per_node];
+  // }
+  std::vector<int> ele;
   for (int i = 0; i < world_size; ++i) {
-    elements[i] = new Vertex[max_vertices_per_node];
-    depths[i] = new int[max_vertices_per_node];
+    elements.push_back(ele);
+    depths.push_back(ele);
   }
-  
   sizes = new int[world_size]();
 }
 
 inline
 DistFrontier::~DistFrontier() {
-  if (elements) {
-    // for (int i = 0; i < world_rank; ++i) {//default code is wrong
-    for (int i = 0; i < world_size; ++i) {
-      if ( elements[i] ) delete elements[i];
-      if ( depths[i] ) delete depths[i];
-    }
-    
-    delete elements;
-    if (depths) delete depths;
-  }
-
+  // if (elements) {
+  //   // for (int i = 0; i < world_rank; ++i) {//default code is wrong
+  //   for (int i = 0; i < world_size; ++i) {
+  //     if ( elements[i] ) delete elements[i];
+  //     if ( depths[i] ) delete depths[i];
+  //   }
+  //   delete elements;
+  //   if (depths) delete depths;
+  // }
   if (sizes) delete sizes;
 }
 
 inline
 void DistFrontier::clear() {
+  for (int i = 0; i < world_size; ++i) {
+    elements[i].clear();
+    depths[i].clear();
+  }
   memset(sizes, 0, world_size * sizeof(int));
 }
 
 inline
 void DistFrontier::add(int owner_rank, Vertex v, int depth) {
-  assert(sizes[owner_rank] < max_vertices_per_node);
-  elements[owner_rank][sizes[owner_rank]] = v;
-  depths[owner_rank][sizes[owner_rank]++] = depth;
+  // assert(sizes[owner_rank] < max_vertices_per_node);
+  // elements[owner_rank][sizes[owner_rank]] = v;
+  // depths[owner_rank][sizes[owner_rank]++] = depth;
+  elements[owner_rank].push_back(v);
+  depths[owner_rank].push_basck(depth);
+  sizes[owner_rank]++;
 }
 
 inline
@@ -91,7 +103,8 @@ int DistFrontier::get_local_frontier_size() {
 
 inline
 Vertex* DistFrontier::get_local_frontier() {
-  return elements[world_rank];
+  // return elements[world_rank];
+  return elements[world_rank].data();
 }
 
 inline
