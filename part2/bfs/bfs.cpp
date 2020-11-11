@@ -202,6 +202,6 @@ void bfs(DistGraph &g, int *depths) {
 
     // printf("iteration end from process %d\n", g.world_rank);
   }
-  printf("vfs finish %d\n", g.world_rank);
+  if (g.world_rank == 0) printf("vfs finish %d\n", g.world_rank);
 }
 
