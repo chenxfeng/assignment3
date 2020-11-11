@@ -173,7 +173,7 @@ void bfs(DistGraph &g, int *depths) {
     //   break;
     int cover_local = 1;
     for (int i = 0; i < g.vertices_per_process; ++i) {
-      if (depths[i] == NOT_VISITED_MARKER && 
+      if (depths[i] == NOT_VISITED_MARKER && ///take out vertex without incoming edge
         v_no_in_edge.count(i+g.vertices_per_process*g.world_rank) == 0) {
         cover_local = 0;
         break;
