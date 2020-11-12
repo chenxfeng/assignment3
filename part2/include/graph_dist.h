@@ -407,7 +407,7 @@ void DistGraph::setup() {
     }
     for (int i = start_vertex; i <= end_vertex; ++i) {
         if (v_in_edges[i - start_vertex].empty()) {
-            v_no_in_edge.insert(i);printf("%d\n", i);
+            v_no_in_edge.insert(i);printf("%d\n", i);///there exist unreachable vertex
         }
         if (v_out_edges[i - start_vertex].empty()) {
             v_no_out_edge.push_back(i);
