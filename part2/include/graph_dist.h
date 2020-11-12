@@ -406,10 +406,10 @@ void DistGraph::setup() {
             send_process_ids.insert(get_vertex_owner_rank(out_edges[i].dest));
     }
     for (int i = start_vertex; i <= end_vertex; ++i) {
-        if (v_in_edges[i].empty()) {
+        if (v_in_edges[i - start_vertex].empty()) {
             v_no_in_edge.insert(i);printf("%d\n", i);
         }
-        if (v_out_edges[i].empty()) {
+        if (v_out_edges[i - start_vertex].empty()) {
             v_no_out_edge.push_back(i);
         }
         if (v_to_out_degree.count(i) > 0)
