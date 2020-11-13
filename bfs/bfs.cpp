@@ -170,10 +170,17 @@ void bottom_up_step(
             // attempt to check all the ancestor
             for (const Vertex* neighbor = start_edge; neighbor != end_edge; ++neighbor) {
                 int incoming = *neighbor;//g->incoming_edges[*neighbor];
-                if (frontier.count(incoming) > 0 && distances[node] == NOT_VISITED_MARKER) {
-                    ///not use a loop cause the compare must be true
-                    __sync_bool_compare_and_swap(&distances[node], NOT_VISITED_MARKER, distances[incoming] + 1);
-#pragma omp critical
+//                 ///ver1
+//                 if (frontier.count(incoming) > 0 && distances[node] == NOT_VISITED_MARKER) {
+//                     ///not use a loop cause the compare must be true
+//                     __sync_bool_compare_and_swap(&distances[node], NOT_VISITED_MARKER, distances[incoming] + 1);
+// #pragma omp critical
+//                     new_frontier.insert(node);
+//                     break;
+//                 }
+                if (frontier.count(incoming) > 0 && 
+                        __sync_bool_compare_and_swap(&distances[node], 
+                        NOT_VISITED_MARKER, distances[incoming] + 1)) {
                     new_frontier.insert(node);
                     break;
                 }
@@ -254,16 +261,23 @@ void hybrid_top_down(
         // attempt to add all neighbors to the new frontier
         for (int neighbor = start_edge; neighbor < end_edge; neighbor++) {
             int outgoing = g->outgoing_edges[neighbor];
-            if (distances[outgoing] == NOT_VISITED_MARKER) {
-                ///not use a loop cause the compare must be true
-                __sync_bool_compare_and_swap(&distances[outgoing], NOT_VISITED_MARKER, distances[node] + 1);
-                int index;
-#pragma omp critical
-                {
-                    index = new_frontier->count++;
-                    new_frontier->query.insert(outgoing);
-                }
+//             ///ver1
+//             if (distances[outgoing] == NOT_VISITED_MARKER) {
+//                 ///not use a loop cause the compare must be true
+//                 __sync_bool_compare_and_swap(&distances[outgoing], NOT_VISITED_MARKER, distances[node] + 1);
+//                 int index;
+// #pragma omp critical
+//                 {
+//                     index = new_frontier->count++;
+//                     new_frontier->query.insert(outgoing);
+//                 }
+//                 new_frontier->vertices[index] = outgoing;
+//             }
+            ///ver2
+            if (__sync_bool_compare_and_swap(&distances[outgoing], NOT_VISITED_MARKER, distances[node] + 1)) {
+                int index = new_frontier->count++;
                 new_frontier->vertices[index] = outgoing;
+                new_frontier->query.insert(outgoing);
             }
         }
     }
@@ -289,6 +303,7 @@ void hybrid_bottom_up(
     //                 int index = new_frontier->count++;
     //                 new_frontier->vertices[index] = outgoing;
     //                 new_frontier->query.insert(node);
+    //                 break;
     //             }
     //         }
     //     }
@@ -303,16 +318,26 @@ void hybrid_bottom_up(
             // attempt to check all the ancestor
             for (const Vertex* neighbor = start_edge; neighbor != end_edge; ++neighbor) {
                 int incoming = *neighbor;//g->incoming_edges[*neighbor];
-                if (frontier->query.count(incoming) > 0 && distances[node] == NOT_VISITED_MARKER) {
-                    ///not use a loop cause the compare must be true
-                    __sync_bool_compare_and_swap(&distances[node], NOT_VISITED_MARKER, distances[incoming] + 1);
-                    int index;
-#pragma omp critical
-                    {
-                        index = new_frontier->count++;
-                        new_frontier->query.insert(node);
-                    }
+//                 ///ver1
+//                 if (frontier->query.count(incoming) > 0 && distances[node] == NOT_VISITED_MARKER) {
+//                     ///not use a loop cause the compare must be true
+//                     __sync_bool_compare_and_swap(&distances[node], NOT_VISITED_MARKER, distances[incoming] + 1);
+//                     int index;
+// #pragma omp critical
+//                     {
+//                         index = new_frontier->count++;
+//                         new_frontier->query.insert(node);
+//                     }
+//                     new_frontier->vertices[index] = node;
+//                 }
+                ///ver2
+                if (frontier->query.count(incoming) > 0 && 
+                        __sync_bool_compare_and_swap(&distances[node], 
+                        NOT_VISITED_MARKER, distances[incoming] + 1)) {
+                    int index = new_frontier->count++;
                     new_frontier->vertices[index] = node;
+                    new_frontier->query.insert(node);
+                    break;
                 }
             }
         }
