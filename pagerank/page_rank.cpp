@@ -114,37 +114,105 @@ void pageRank(Graph g, double* solution, double damping, double convergence)
 //     converged = global_diff < convergence;
 //   }
 
+//   std::vector<int> nodes_with_no_outgoing_edge;
+//   ///stl container is not thread-safe; concurrent write can't be parallelized
+//   for (int vi = 0; vi < numNodes; ++vi) {
+//     if (outgoing_size(g, vi) <= 0)
+//       nodes_with_no_outgoing_edge.push_back(vi);
+//   }
+//   bool converged = false;
+//   double damping_value = (1.0 - damping) / numNodes;
+//   double* score_new = new double[numNodes];
+//   while (!converged) {
+//     double global_diff = 0;
+// #pragma omp parallel for
+// // #pragma omp parallel for num_threads(thread_count) schedule(static, 1)
+//     for (int vi = 0; vi < numNodes; ++vi) {
+//       ///loop over all the incoming edge 's node
+//       const Vertex* start = incoming_begin(g, vi);
+//       const Vertex* end = incoming_end(g, vi);
+//       for (const Vertex* vj = start; vj != end; ++vj) {
+//         score_new[vi] += solution[*vj] / outgoing_size(g, *vj);
+//       }
+//       score_new[vi] = (damping * score_new[vi]) + damping_value;
+//       ///loop over all the nodes with no outgoing edge
+//       for (int i = 0; i < nodes_with_no_outgoing_edge.size(); ++i) {
+//         score_new[vi] += damping * solution[nodes_with_no_outgoing_edge[i]] / numNodes;
+//       }
+// #pragma omp critical
+//       global_diff += abs(score_new[vi] - solution[vi]);
+//     }
+// #pragma omp parallel for
+//   for (int vi = 0; vi < numNodes; ++vi) {
+//     solution[vi] = score_new[vi];///update solution
+//     score_new[vi] = 0;
+//   }
+//     converged = global_diff < convergence;
+//   }
+
+//   std::vector<int> nodes_with_no_outgoing_edge;
+//   for (int vi = 0; vi < numNodes; ++vi) {
+//     if (outgoing_size(g, vi) <= 0)
+//       nodes_with_no_outgoing_edge.push_back(vi);
+//   }
+//   bool converged = false;
+//   double damping_value = (1.0 - damping) / numNodes;
+
+//   while (!converged) {
+//     double global_diff = 0;
+// #pragma omp parallel for reduction(+ : global_diff)
+// // #pragma omp parallel for num_threads(thread_count) schedule(static, 1)
+//     for (int vi = 0; vi < numNodes; ++vi) {
+//       ///loop over all the incoming edge 's node
+//       const Vertex* start = incoming_begin(g, vi);
+//       const Vertex* end = incoming_end(g, vi);
+//       double score_new = 0;
+//       for (const Vertex* vj = start; vj != end; ++vj) {
+//         score_new += solution[*vj] / outgoing_size(g, *vj);
+//       }
+//       score_new = (damping * score_new) + damping_value;
+//       ///loop over all the nodes with no outgoing edge
+//       for (int i = 0; i < nodes_with_no_outgoing_edge.size(); ++i) {
+//         score_new += damping * solution[nodes_with_no_outgoing_edge[i]] / numNodes;
+//       }
+//       global_diff += abs(score_new - solution[vi]);
+//       solution[vi] = score_new;
+//     }
+//     converged = global_diff < convergence;
+//   }
 
   std::vector<int> nodes_with_no_outgoing_edge;
+  ///stl container is not thread-safe; concurrent write can't be parallelized
   for (int vi = 0; vi < numNodes; ++vi) {
     if (outgoing_size(g, vi) <= 0)
       nodes_with_no_outgoing_edge.push_back(vi);
   }
   bool converged = false;
   double damping_value = (1.0 - damping) / numNodes;
-
+  double* score_new = new double[numNodes];
   while (!converged) {
     double global_diff = 0;
-#pragma omp parallel for
+#pragma omp parallel for reduction(+ : global_diff)
 // #pragma omp parallel for num_threads(thread_count) schedule(static, 1)
     for (int vi = 0; vi < numNodes; ++vi) {
       ///loop over all the incoming edge 's node
       const Vertex* start = incoming_begin(g, vi);
       const Vertex* end = incoming_end(g, vi);
-      double score_new = 0;
       for (const Vertex* vj = start; vj != end; ++vj) {
-        score_new += solution[*vj] / outgoing_size(g, *vj);
+        score_new[vi] += solution[*vj] / outgoing_size(g, *vj);
       }
-      score_new = (damping * score_new) + damping_value;
+      score_new[vi] = (damping * score_new[vi]) + damping_value;
       ///loop over all the nodes with no outgoing edge
       for (int i = 0; i < nodes_with_no_outgoing_edge.size(); ++i) {
-        score_new += damping * solution[nodes_with_no_outgoing_edge[i]] / numNodes;
+        score_new[vi] += damping * solution[nodes_with_no_outgoing_edge[i]] / numNodes;
       }
-#pragma omp critical
-      global_diff += abs(score_new - solution[vi]);
-// #pragma omp critical ///does it matter if reading an old value?
-      solution[vi] = score_new;
+      global_diff += abs(score_new[vi] - solution[vi]);
     }
+#pragma omp parallel for
+  for (int vi = 0; vi < numNodes; ++vi) {
+    solution[vi] = score_new[vi];///update solution
+    score_new[vi] = 0;
+  }
     converged = global_diff < convergence;
   }
 }
