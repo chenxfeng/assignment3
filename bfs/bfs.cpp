@@ -73,13 +73,18 @@ void top_down_step(
 //                 new_frontier->vertices[index] = outgoing;
 //                 }
 //             }
-            ///replace __sync_bool_compare_and_swap with critical region
-            if (distances[outgoing] == NOT_VISITED_MARKER) {
-                ///not use a loop cause the compare must be true
-                __sync_bool_compare_and_swap(&distances[outgoing], NOT_VISITED_MARKER, distances[node] + 1);
-                int index;
-#pragma omp critical
-                index = new_frontier->count++;
+//             ///replace __sync_bool_compare_and_swap with critical region
+//             if (distances[outgoing] == NOT_VISITED_MARKER) {
+//                 ///not use a loop cause the compare must be true
+//                 __sync_bool_compare_and_swap(&distances[outgoing], NOT_VISITED_MARKER, distances[node] + 1);
+//                 int index;
+// #pragma omp critical
+//                 index = new_frontier->count++;
+//                 new_frontier->vertices[index] = outgoing;
+//             }
+            if (__sync_bool_compare_and_swap(&distances[outgoing], NOT_VISITED_MARKER, 
+                                                distances[node] + 1)) {
+                int index = new_frontier->count++;
                 new_frontier->vertices[index] = outgoing;
             }
         }
