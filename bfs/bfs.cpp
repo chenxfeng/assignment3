@@ -190,11 +190,23 @@ void bottom_up_step(
 //                     new_frontier.insert(node);
 //                     break;
 //                 }
-                if (frontier.count(incoming) > 0 && 
-                        __sync_bool_compare_and_swap(&distances[node], 
-                        NOT_VISITED_MARKER, distances[incoming] + 1)) {
+//                 ///ver2: wrong as top-down version and core dumped & segmentation fault
+//                 if (frontier.count(incoming) > 0 && 
+//                         __sync_bool_compare_and_swap(&distances[node], 
+//                         NOT_VISITED_MARKER, distances[incoming] + 1)) {
+//                     new_frontier.insert(node);
+//                     break;
+//                 }
+                ///ver3
+                if (frontier.count(incoming) > 0 && distances[node] == NOT_VISITED_MARKER) {
+#pragma omp critical
+                    {
+                    // __sync_bool_compare_and_swap(&distances[node], NOT_VISITED_MARKER, 
+                    //                             distances[incoming] + 1);//unnecessary in critical
+                    distances[node] = distances[incoming] + 1;
                     new_frontier.insert(node);
                     break;
+                    }
                 }
             }
         }
@@ -285,11 +297,23 @@ void hybrid_top_down(
 //                 }
 //                 new_frontier->vertices[index] = outgoing;
 //             }
-            ///ver2
-            if (__sync_bool_compare_and_swap(&distances[outgoing], NOT_VISITED_MARKER, distances[node] + 1)) {
+//             ///ver2: wrong as top-down version and core dumped & segmentation fault
+//             if (__sync_bool_compare_and_swap(&distances[outgoing], NOT_VISITED_MARKER, distances[node] + 1)) {
+//                 int index = new_frontier->count++;
+//                 new_frontier->vertices[index] = outgoing;
+//                 new_frontier->query.insert(outgoing);
+//             }
+            ///ver3
+            if (distances[outgoing] == NOT_VISITED_MARKER) {
+#pragma omp critical
+                {
+                // __sync_bool_compare_and_swap(&distances[outgoing], NOT_VISITED_MARKER, 
+                //                                 distances[node] + 1);//unnecessary in critical
+                distances[outgoing] = distances[node] + 1;
                 int index = new_frontier->count++;
-                new_frontier->vertices[index] = outgoing;
                 new_frontier->query.insert(outgoing);
+                new_frontier->vertices[index] = outgoing;
+                }
             }
         }
     }
@@ -342,14 +366,26 @@ void hybrid_bottom_up(
 //                     }
 //                     new_frontier->vertices[index] = node;
 //                 }
-                ///ver2
-                if (frontier->query.count(incoming) > 0 && 
-                        __sync_bool_compare_and_swap(&distances[node], 
-                        NOT_VISITED_MARKER, distances[incoming] + 1)) {
+//                 ///ver2: wrong as top-down version and core dumped & segmentation fault
+//                 if (frontier->query.count(incoming) > 0 && 
+//                         __sync_bool_compare_and_swap(&distances[node], 
+//                         NOT_VISITED_MARKER, distances[incoming] + 1)) {
+//                     int index = new_frontier->count++;
+//                     new_frontier->vertices[index] = node;
+//                     new_frontier->query.insert(node);
+//                     break;
+//                 }
+                ///ver3
+                if (frontier->query.count(incoming) > 0 && distances[node] == NOT_VISITED_MARKER) {
+#pragma omp critical
+                    {
+                    // __sync_bool_compare_and_swap(&distances[node], NOT_VISITED_MARKER, 
+                    //                                 distances[incoming] + 1);//unnecessary in critical
+                    distances[node] = distances[incoming] + 1;
                     int index = new_frontier->count++;
-                    new_frontier->vertices[index] = node;
                     new_frontier->query.insert(node);
-                    break;
+                    new_frontier->vertices[index] = node;
+                    }
                 }
             }
         }
