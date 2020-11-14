@@ -82,10 +82,22 @@ void top_down_step(
 //                 index = new_frontier->count++;
 //                 new_frontier->vertices[index] = outgoing;
 //             }
-            if (__sync_bool_compare_and_swap(&distances[outgoing], NOT_VISITED_MARKER, 
-                                                distances[node] + 1)) {
+            // ///but error of this code block
+            // if (__sync_bool_compare_and_swap(&distances[outgoing], NOT_VISITED_MARKER, 
+            //                                     distances[node] + 1)) {
+            //     assert(distances[outgoing] == distances[node] + 1);//no find out problem
+            //     int index = new_frontier->count++;
+            //     new_frontier->vertices[index] = outgoing;
+            // }
+            if (distances[outgoing] == NOT_VISITED_MARKER) {
+#pragma omp critical
+                {
+                // __sync_bool_compare_and_swap(&distances[outgoing], NOT_VISITED_MARKER,
+                //                                 distances[node] + 1);//unnecessary in critical
+                distances[outgoing] = distances[node] + 1;
                 int index = new_frontier->count++;
                 new_frontier->vertices[index] = outgoing;
+                }
             }
         }
     }
