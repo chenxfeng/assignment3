@@ -205,7 +205,7 @@ void bottom_up_step(
                     //                             distances[incoming] + 1);//unnecessary in critical
                     distances[node] = distances[incoming] + 1;
                     new_frontier.insert(node);
-                    break;
+                    // break;///invalid exit in OMP
                     }
                 }
             }
